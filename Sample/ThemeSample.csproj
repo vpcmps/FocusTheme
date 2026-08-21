@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Not shipped. This project exists only so AllTokens.cs sits inside a real
+       compilation: Roslyn only emits the semantic classifications a theme colours
+       (class name, method name, constant name, ...) for files it can bind. A loose
+       or unsaved file falls back to syntactic classification alone, where every
+       identifier is just "Identifier" and most of a palette never shows up. -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- The sample deliberately contains unused fields, unreachable code and
+         obsolete calls, because those are token classes worth looking at. -->
+    <NoWarn>$(NoWarn);CS0169;CS0414;CS0649;CS0067;CS0162;CS8321;CS0219</NoWarn>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,14 @@
+# Build output
+bin/
+obj/
+*.user
+
+# Visual Studio
+.vs/
+
+# VSIX
+*.vsix
+
+# Python (gen-themes.py / derive-light.py are run by hand)
+__pycache__/
+*.pyc
