@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="FocusThemes.b9d6cd53-0821-40c2-bf4e-ef01584a6755" Version="1.0" Language="en-US" Publisher="FocusThemes" />
+    <Identity Id="FocusThemes.b9d6cd53-0821-40c2-bf4e-ef01584a6755" Version="1.0.0" Language="en-US" Publisher="vpcampos" />
     <DisplayName>Focus Themes</DisplayName>
     <Description xml:space="preserve">Six high-separation dark color themes for Visual Studio, built for scanning: strong semantic separation so no two token classes read alike, one dominant accent per theme, and a near-black ground for contrast without glare. Voltage, Ultraviolet, Reactor, Arcade, Signal and Nightdive.</Description>
+    <MoreInfo>https://github.com/vpcmps/GraphiteTheme</MoreInfo>
+    <License>Assets\LICENSE.txt</License>
+    <Icon>Assets\icon.png</Icon>
+    <PreviewImage>Assets\icon.png</PreviewImage>
     <Tags>theme, color theme, dark, high contrast, focus, adhd, accessibility</Tags>
   </Metadata>
   <Installation>

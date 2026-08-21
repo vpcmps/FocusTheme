@@ -1,0 +1,174 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and validate release
+    runs-on: windows-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Validate tag and main ancestry
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          git fetch origin main --no-tags
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Unable to fetch origin/main.'
+          }
+
+          ./scripts/Test-ReleaseTag.ps1 `
+            -Tag $env:RELEASE_TAG `
+            -Commit $env:GITHUB_SHA `
+            -MainRef origin/main `
+            -RepositoryRoot $env:GITHUB_WORKSPACE
+
+      - name: Run release automation tests
+        shell: pwsh
+        run: ./scripts/Test.ps1
+
+      - name: Build release artifacts
+        shell: pwsh
+        run: ./scripts/Build-Release.ps1 -ExpectedVersion '${{ steps.release.outputs.version }}'
+
+      - name: Upload immutable workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ steps.release.outputs.version }}
+          path: |
+            artifacts/release/GraphiteTheme-${{ steps.release.outputs.version }}.vsix
+            artifacts/release/FocusThemes-${{ steps.release.outputs.version }}.vsix
+            artifacts/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  github-release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download validated artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: artifacts/release
+
+      - name: Create or update GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          $assets = @(
+            (Resolve-Path "artifacts/release/GraphiteTheme-$env:RELEASE_VERSION.vsix").Path,
+            (Resolve-Path "artifacts/release/FocusThemes-$env:RELEASE_VERSION.vsix").Path,
+            (Resolve-Path 'artifacts/release/SHA256SUMS.txt').Path
+          )
+
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG @assets --clobber
+          }
+          else {
+            gh release create $env:RELEASE_TAG @assets --verify-tag --generate-notes --title "Graphite and Focus Themes $env:RELEASE_VERSION"
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "GitHub Release publication failed with exit code $LASTEXITCODE."
+          }
+
+  marketplace:
+    name: Publish Visual Studio Marketplace
+    needs:
+      - build
+      - github-release
+    runs-on: windows-latest
+    timeout-minutes: 20
+    environment:
+      name: visual-studio-marketplace
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out marketplace metadata
+        uses: actions/checkout@v7
+
+      - name: Download validated artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-${{ needs.build.outputs.version }}
+          path: artifacts/release
+
+      - name: Restore VSIX publishing tools
+        shell: pwsh
+        run: dotnet restore GraphiteTheme.slnx
+
+      - name: Publish both extensions
+        shell: pwsh
+        env:
+          VS_MARKETPLACE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VS_MARKETPLACE_PAT)) {
+            throw 'The VS_MARKETPLACE_PAT environment secret is not configured.'
+          }
+
+          $publisher = Get-ChildItem `
+            -Path "$env:USERPROFILE/.nuget/packages/microsoft.vssdk.buildtools" `
+            -Recurse `
+            -Filter VsixPublisher.exe |
+            Where-Object FullName -NotMatch '[\\/]lib[\\/]' |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+
+          if ($null -eq $publisher) {
+            throw 'VsixPublisher.exe was not restored from Microsoft.VSSDK.BuildTools.'
+          }
+
+          $publications = @(
+            @{
+              Payload = "artifacts/release/GraphiteTheme-$env:RELEASE_VERSION.vsix"
+              Manifest = 'marketplace/GraphiteTheme/vs-publish.json'
+            },
+            @{
+              Payload = "artifacts/release/FocusThemes-$env:RELEASE_VERSION.vsix"
+              Manifest = 'marketplace/FocusThemes/vs-publish.json'
+            }
+          )
+
+          foreach ($publication in $publications) {
+            & $publisher.FullName publish `
+              -payload $publication.Payload `
+              -publishManifest $publication.Manifest `
+              -personalAccessToken $env:VS_MARKETPLACE_PAT
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Marketplace publication failed for '$($publication.Payload)' with exit code $LASTEXITCODE."
+            }
+          }

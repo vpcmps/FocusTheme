@@ -45,4 +45,15 @@
     <None Include="Themes\gen-themes.py" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\marketplace\FocusThemes\icon.png">
+      <Link>Assets\icon.png</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\LICENSE.txt">
+      <Link>Assets\LICENSE.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+  </ItemGroup>
+
 </Project>

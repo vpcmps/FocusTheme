@@ -8,6 +8,7 @@ obj/
 
 # VSIX
 *.vsix
+artifacts/
 
 # Python (gen-themes.py / derive-light.py are run by hand)
 __pycache__/

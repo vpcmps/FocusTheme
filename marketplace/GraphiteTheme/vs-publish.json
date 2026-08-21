@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/vsix-publish.json",
+  "categories": [
+    "coding"
+  ],
+  "identity": {
+    "internalName": "GraphiteTheme"
+  },
+  "overview": "overview.md",
+  "priceCategory": "free",
+  "publisher": "vpcampos",
+  "private": false,
+  "qna": true,
+  "repo": "https://github.com/vpcmps/GraphiteTheme",
+  "assetFiles": [
+    {
+      "pathOnDisk": "screenshots/GraphiteDark.png",
+      "targetPath": "images/GraphiteDark.png"
+    },
+    {
+      "pathOnDisk": "screenshots/GraphiteLight.png",
+      "targetPath": "images/GraphiteLight.png"
+    }
+  ]
+}
