@@ -53,4 +53,14 @@ Describe 'Release commit ancestry validation' {
             Assert-CommitOnMain -RepositoryRoot $repository -Commit $featureCommit -MainRef 'main'
         } | Should Be $true
     }
+
+    It 'does not leak a native failure exit code after rejecting a commit' {
+        $global:LASTEXITCODE = 0
+
+        Test-ThrowsReleaseTag {
+            Assert-CommitOnMain -RepositoryRoot $repository -Commit $featureCommit -MainRef 'main'
+        } | Should Be $true
+
+        $global:LASTEXITCODE | Should Be 0
+    }
 }

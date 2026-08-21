@@ -33,7 +33,10 @@ function Assert-CommitOnMain {
     }
 
     $null = & git -C $RepositoryRoot merge-base --is-ancestor $Commit $MainRef 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $nativeExitCode = $LASTEXITCODE
+    $global:LASTEXITCODE = 0
+
+    if ($nativeExitCode -ne 0) {
         throw "Commit '$Commit' is not contained in '$MainRef'."
     }
 }
