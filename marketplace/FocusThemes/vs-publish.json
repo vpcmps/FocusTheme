@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/vsix-publish.json",
+  "categories": [
+    "coding"
+  ],
+  "identity": {
+    "internalName": "FocusThemes"
+  },
+  "overview": "overview.md",
+  "priceCategory": "free",
+  "publisher": "vpcampos",
+  "private": false,
+  "qna": true,
+  "repo": "https://github.com/vpcmps/GraphiteTheme",
+  "assetFiles": [
+    {
+      "pathOnDisk": "screenshots/FocusVoltage.png",
+      "targetPath": "images/FocusVoltage.png"
+    },
+    {
+      "pathOnDisk": "screenshots/FocusUltraviolet.png",
+      "targetPath": "images/FocusUltraviolet.png"
+    },
+    {
+      "pathOnDisk": "screenshots/FocusReactor.png",
+      "targetPath": "images/FocusReactor.png"
+    },
+    {
+      "pathOnDisk": "screenshots/FocusArcade.png",
+      "targetPath": "images/FocusArcade.png"
+    },
+    {
+      "pathOnDisk": "screenshots/FocusSignal.png",
+      "targetPath": "images/FocusSignal.png"
+    },
+    {
+      "pathOnDisk": "screenshots/FocusNightdive.png",
+      "targetPath": "images/FocusNightdive.png"
+    }
+  ]
+}
