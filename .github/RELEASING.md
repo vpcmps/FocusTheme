@@ -19,7 +19,7 @@ Allow workflows to create releases with the repository `GITHUB_TOKEN`. The relea
 
 ## Publishing
 
-Both source manifests must contain the same stable version and use `Publisher="vpcampos"`. After the version change is merged to `main`, create the matching tag:
+Both source manifests must contain the same stable version and use the public display name `Publisher="Vinícius Campos"`. The immutable Marketplace publisher ID remains `vpcampos` in both `vs-publish.json` files. After the version change is merged to `main`, create the matching tag:
 
 ```powershell
 git tag v1.0.0

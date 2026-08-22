@@ -25,6 +25,27 @@ Describe 'Build-Release version contract' {
     }
 }
 
+Describe 'Repository publisher contract' {
+    It 'uses the public publisher name in both VSIX manifests' {
+        foreach ($manifestPath in @(
+            (Join-Path $repoRoot 'GraphiteTheme\source.extension.vsixmanifest'),
+            (Join-Path $repoRoot 'FocusThemes\source.extension.vsixmanifest')
+        )) {
+            (Get-VsixManifestMetadata -Path $manifestPath).Publisher | Should Be 'Vinícius Campos'
+        }
+    }
+
+    It 'retains the immutable Marketplace publisher ID' {
+        foreach ($publishManifestPath in @(
+            (Join-Path $repoRoot 'marketplace\GraphiteTheme\vs-publish.json'),
+            (Join-Path $repoRoot 'marketplace\FocusThemes\vs-publish.json')
+        )) {
+            $publishManifest = Get-Content -Raw -LiteralPath $publishManifestPath | ConvertFrom-Json
+            $publishManifest.publisher | Should Be 'vpcampos'
+        }
+    }
+}
+
 Describe 'Build-Release manifest contract' {
     BeforeEach {
         $manifestPath = Join-Path $TestDrive 'source.extension.vsixmanifest'
@@ -32,7 +53,7 @@ Describe 'Build-Release manifest contract' {
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="vpcampos" />
+    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
     <Icon>Assets\icon.png</Icon>
     <PreviewImage>Assets\icon.png</PreviewImage>
     <License>Assets\LICENSE.txt</License>
@@ -46,7 +67,7 @@ Describe 'Build-Release manifest contract' {
 
         $metadata.Id | Should Be 'GraphiteTheme.test-id'
         $metadata.Version | Should Be '1.2.3'
-        $metadata.Publisher | Should Be 'vpcampos'
+        $metadata.Publisher | Should Be 'Vinícius Campos'
         $metadata.Icon | Should Be 'Assets\icon.png'
         $metadata.PreviewImage | Should Be 'Assets\icon.png'
         $metadata.License | Should Be 'Assets\LICENSE.txt'
@@ -57,15 +78,15 @@ Describe 'Build-Release manifest contract' {
             Set-Content -LiteralPath $manifestPath -Encoding UTF8
 
         Test-Throws {
-            Assert-ManifestContract -Metadata (Get-VsixManifestMetadata -Path $manifestPath) -ExpectedVersion '1.2.3' -ExpectedPublisher 'vpcampos'
+            Assert-ManifestContract -Metadata (Get-VsixManifestMetadata -Path $manifestPath) -ExpectedVersion '1.2.3' -ExpectedPublisherDisplayName 'Vinícius Campos'
         } | Should Be $true
     }
 
     It 'rejects a version or publisher mismatch' {
         $metadata = Get-VsixManifestMetadata -Path $manifestPath
 
-        Test-Throws { Assert-ManifestContract -Metadata $metadata -ExpectedVersion '9.9.9' -ExpectedPublisher 'vpcampos' } | Should Be $true
-        Test-Throws { Assert-ManifestContract -Metadata $metadata -ExpectedVersion '1.2.3' -ExpectedPublisher 'another-publisher' } | Should Be $true
+        Test-Throws { Assert-ManifestContract -Metadata $metadata -ExpectedVersion '9.9.9' -ExpectedPublisherDisplayName 'Vinícius Campos' } | Should Be $true
+        Test-Throws { Assert-ManifestContract -Metadata $metadata -ExpectedVersion '1.2.3' -ExpectedPublisherDisplayName 'Another Publisher' } | Should Be $true
     }
 }
 
@@ -77,7 +98,7 @@ Describe 'Build-Release VSIX inspection' {
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="FocusThemes.test-id" Version="4.5.6" Language="en-US" Publisher="vpcampos" />
+    <Identity Id="FocusThemes.test-id" Version="4.5.6" Language="en-US" Publisher="Vinícius Campos" />
     <Icon>Assets\icon.png</Icon>
     <PreviewImage>Assets\icon.png</PreviewImage>
     <License>Assets\LICENSE.txt</License>
@@ -91,7 +112,7 @@ Describe 'Build-Release VSIX inspection' {
         $metadata = Get-PackagedVsixMetadata -Path $vsixPath
         $metadata.Id | Should Be 'FocusThemes.test-id'
         $metadata.Version | Should Be '4.5.6'
-        $metadata.Publisher | Should Be 'vpcampos'
+        $metadata.Publisher | Should Be 'Vinícius Campos'
     }
 
     It 'requires the icon, preview image, and license files inside the package' {
@@ -102,7 +123,7 @@ Describe 'Build-Release VSIX inspection' {
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="vpcampos" />
+    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
     <Icon>Assets\icon.png</Icon>
     <PreviewImage>Assets\icon.png</PreviewImage>
     <License>Assets\LICENSE.txt</License>
@@ -149,7 +170,7 @@ Describe 'Build-Release Marketplace manifest validation' {
 
         Assert-MarketplaceManifestContract `
             -Path (Join-Path $listingRoot 'vs-publish.json') `
-            -ExpectedPublisher 'vpcampos' `
+            -ExpectedPublisherId 'vpcampos' `
             -ExpectedInternalName 'GraphiteTheme'
     }
 
@@ -176,7 +197,7 @@ Describe 'Build-Release Marketplace manifest validation' {
         Test-Throws {
             Assert-MarketplaceManifestContract `
                 -Path (Join-Path $listingRoot 'vs-publish.json') `
-                -ExpectedPublisher 'vpcampos' `
+                -ExpectedPublisherId 'vpcampos' `
                 -ExpectedInternalName 'GraphiteTheme'
         } | Should Be $true
     }

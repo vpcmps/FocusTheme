@@ -60,7 +60,7 @@ function Assert-ManifestContract {
     param(
         [Parameter(Mandatory)]$Metadata,
         [Parameter(Mandatory)][string]$ExpectedVersion,
-        [Parameter(Mandatory)][string]$ExpectedPublisher,
+        [Parameter(Mandatory)][string]$ExpectedPublisherDisplayName,
         [string]$ExpectedId
     )
 
@@ -69,8 +69,8 @@ function Assert-ManifestContract {
     if ($Metadata.Version -ne $ExpectedVersion) {
         throw "VSIX version '$($Metadata.Version)' does not match expected version '$ExpectedVersion'."
     }
-    if ($Metadata.Publisher -cne $ExpectedPublisher) {
-        throw "VSIX publisher '$($Metadata.Publisher)' does not match expected publisher '$ExpectedPublisher'."
+    if ($Metadata.Publisher -cne $ExpectedPublisherDisplayName) {
+        throw "VSIX publisher '$($Metadata.Publisher)' does not match expected display name '$ExpectedPublisherDisplayName'."
     }
     if ($ExpectedId -and $Metadata.Id -cne $ExpectedId) {
         throw "VSIX identity '$($Metadata.Id)' does not match expected identity '$ExpectedId'."
@@ -141,7 +141,7 @@ function Assert-MarketplaceManifestContract {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][string]$Path,
-        [Parameter(Mandatory)][string]$ExpectedPublisher,
+        [Parameter(Mandatory)][string]$ExpectedPublisherId,
         [Parameter(Mandatory)][string]$ExpectedInternalName
     )
 
@@ -152,8 +152,8 @@ function Assert-MarketplaceManifestContract {
     $manifest = Get-Content -Raw -LiteralPath $Path | ConvertFrom-Json
     $manifestRoot = Split-Path -Parent (Resolve-Path -LiteralPath $Path)
 
-    if ([string]$manifest.publisher -cne $ExpectedPublisher) {
-        throw "Marketplace publisher '$($manifest.publisher)' does not match '$ExpectedPublisher'."
+    if ([string]$manifest.publisher -cne $ExpectedPublisherId) {
+        throw "Marketplace publisher ID '$($manifest.publisher)' does not match '$ExpectedPublisherId'."
     }
     if ([string]$manifest.identity.internalName -cne $ExpectedInternalName) {
         throw "Marketplace internal name '$($manifest.identity.internalName)' does not match '$ExpectedInternalName'."
@@ -250,11 +250,11 @@ function Invoke-BuildRelease {
         Assert-ManifestContract `
             -Metadata $sourceMetadata[$extension.Name] `
             -ExpectedVersion $ExpectedVersion `
-            -ExpectedPublisher 'vpcampos' `
+            -ExpectedPublisherDisplayName 'Vinícius Campos' `
             -ExpectedId $extension.Identity
         Assert-MarketplaceManifestContract `
             -Path $extension.PublishPath `
-            -ExpectedPublisher 'vpcampos' `
+            -ExpectedPublisherId 'vpcampos' `
             -ExpectedInternalName $extension.Name
     }
 
@@ -285,7 +285,7 @@ function Invoke-BuildRelease {
         Assert-ManifestContract `
             -Metadata $packagedMetadata `
             -ExpectedVersion $ExpectedVersion `
-            -ExpectedPublisher 'vpcampos' `
+            -ExpectedPublisherDisplayName 'Vinícius Campos' `
             -ExpectedId $extension.Identity
         Assert-PackagedVsixAssets -Path $destinationVsix -Metadata $packagedMetadata
 
