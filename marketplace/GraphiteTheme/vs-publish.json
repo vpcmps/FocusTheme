@@ -4,7 +4,15 @@
     "coding"
   ],
   "identity": {
-    "internalName": "GraphiteTheme"
+    "internalName": "GraphiteTheme",
+    "tags": [
+      "theme",
+      "color theme",
+      "dark",
+      "light",
+      "graphite",
+      "andromeda"
+    ]
   },
   "overview": "overview.md",
   "priceCategory": "free",

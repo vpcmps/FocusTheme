@@ -4,7 +4,16 @@
     "coding"
   ],
   "identity": {
-    "internalName": "FocusThemes"
+    "internalName": "FocusThemes",
+    "tags": [
+      "theme",
+      "color theme",
+      "dark",
+      "focus",
+      "adhd",
+      "accessibility",
+      "semantic highlighting"
+    ]
   },
   "overview": "overview.md",
   "priceCategory": "free",
