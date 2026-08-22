@@ -11,7 +11,7 @@ Both extensions target Visual Studio versions 17.9 through 18.x on AMD64 and ARM
 
 ### GitHub Releases
 
-Download the matching `.vsix` from the latest [GitHub Release](https://github.com/vpcmps/GraphiteTheme/releases), close Visual Studio, and run the package. Verify the downloaded file against `SHA256SUMS.txt` when installing outside the Marketplace.
+Download the matching `.vsix` from the latest [GitHub Release](https://github.com/vpcmps/GraphiteTheme/releases), close Visual Studio, and run the package. Verify the downloaded file against `SHA256SUMS.txt` before installation.
 
 ## Development
 
