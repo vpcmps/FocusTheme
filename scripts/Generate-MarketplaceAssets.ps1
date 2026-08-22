@@ -9,6 +9,12 @@ Set-StrictMode -Version Latest
 
 Add-Type -AssemblyName System.Drawing
 
+# GenericTypographic does not measure trailing spaces, so a preview segment that
+# ends in one would have its neighbour drawn hard against it. Draw and measure
+# both go through this copy of it, which does.
+$script:TextFormat = [System.Drawing.StringFormat]::new([System.Drawing.StringFormat]::GenericTypographic)
+$script:TextFormat.FormatFlags = $script:TextFormat.FormatFlags -bor [System.Drawing.StringFormatFlags]::MeasureTrailingSpaces
+
 function ConvertTo-DrawingColor {
     param([Parameter(Mandatory)][string]$Hex)
 
@@ -27,7 +33,7 @@ function Write-GraphicText {
 
     $brush = [System.Drawing.SolidBrush]::new($Color)
     try {
-        $Graphics.DrawString($Text, $Font, $brush, $X, $Y, [System.Drawing.StringFormat]::GenericTypographic)
+        $Graphics.DrawString($Text, $Font, $brush, $X, $Y, $script:TextFormat)
     }
     finally {
         $brush.Dispose()
@@ -120,29 +126,30 @@ function Get-CodePreviewLines {
         @(@{ Text = 'namespace'; Kind = 'Keyword' }, @{ Text = ' Sample.Tokens'; Kind = 'Text' }),
         @(@{ Text = '{'; Kind = 'Text' }),
         @(@{ Text = '    /// Every token class the themes paint, in one file.'; Kind = 'Comment' }),
-        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' sealed'; Kind = 'Keyword' }, @{ Text = ' class'; Kind = 'Keyword' }, @{ Text = ' AllTokens'; Kind = 'Type' }, @{ Text = '<T> : '; Kind = 'Text' }, @{ Text = 'ITokenSample'; Kind = 'Type' }, @{ Text = ', IDisposable'; Kind = 'Type' }),
+        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' interface'; Kind = 'Keyword' }, @{ Text = ' ITokenSample'; Kind = 'Interface' }, @{ Text = ' {'; Kind = 'Text' }, @{ Text = ' int'; Kind = 'Keyword' }, @{ Text = ' Count {'; Kind = 'Text' }, @{ Text = ' get'; Kind = 'Keyword' }, @{ Text = '; } }'; Kind = 'Text' }),
+        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' record'; Kind = 'Keyword' }, @{ Text = ' Palette'; Kind = 'Record' }, @{ Text = '('; Kind = 'Text' }, @{ Text = 'string'; Kind = 'Keyword' }, @{ Text = ' Name,'; Kind = 'Text' }, @{ Text = ' int'; Kind = 'Keyword' }, @{ Text = ' Size);'; Kind = 'Text' }),
+        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' struct'; Kind = 'Keyword' }, @{ Text = ' Accent'; Kind = 'Struct' }, @{ Text = ' {'; Kind = 'Text' }, @{ Text = ' public'; Kind = 'Keyword' }, @{ Text = ' byte'; Kind = 'Keyword' }, @{ Text = ' R, G, B; }'; Kind = 'Text' }),
+        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' enum'; Kind = 'Keyword' }, @{ Text = ' Emphasis'; Kind = 'Enum' }, @{ Text = ' { None, Italic, Bold }'; Kind = 'Text' }),
+        @(@{ Text = ''; Kind = 'Text' }),
+        @(@{ Text = '    public'; Kind = 'Keyword' }, @{ Text = ' sealed'; Kind = 'Keyword' }, @{ Text = ' class'; Kind = 'Keyword' }, @{ Text = ' AllTokens'; Kind = 'Class' }, @{ Text = '<T> : '; Kind = 'Text' }, @{ Text = 'ITokenSample'; Kind = 'Interface' }, @{ Text = ', '; Kind = 'Text' }, @{ Text = 'IDisposable'; Kind = 'Interface' }),
         @(@{ Text = '        where'; Kind = 'Keyword' }, @{ Text = ' T : '; Kind = 'Text' }, @{ Text = 'class'; Kind = 'Keyword' }, @{ Text = ', '; Kind = 'Text' }, @{ Text = 'new'; Kind = 'Keyword' }, @{ Text = '()'; Kind = 'Text' }),
         @(@{ Text = '    {'; Kind = 'Text' }),
-        @(@{ Text = '        private'; Kind = 'Keyword' }, @{ Text = ' readonly'; Kind = 'Keyword' }, @{ Text = ' List'; Kind = 'Type' }, @{ Text = '<string> _backing = '; Kind = 'Text' }, @{ Text = 'new'; Kind = 'Keyword' }, @{ Text = ' List'; Kind = 'Type' }, @{ Text = '<string>();'; Kind = 'Text' }),
-        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' const'; Kind = 'Keyword' }, @{ Text = ' int'; Kind = 'Type' }, @{ Text = ' MaxAccents = '; Kind = 'Text' }, @{ Text = '31'; Kind = 'Number' }, @{ Text = ';'; Kind = 'Text' }),
-        @(@{ Text = '        private'; Kind = 'Keyword' }, @{ Text = ' const'; Kind = 'Keyword' }, @{ Text = ' string'; Kind = 'Type' }, @{ Text = ' DefaultLabel = '; Kind = 'Text' }, @{ Text = '"graphite"'; Kind = 'String' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '        private'; Kind = 'Keyword' }, @{ Text = ' readonly'; Kind = 'Keyword' }, @{ Text = ' List'; Kind = 'Class' }, @{ Text = '<'; Kind = 'Text' }, @{ Text = 'string'; Kind = 'Keyword' }, @{ Text = '>'; Kind = 'Text' }, @{ Text = ' _backing'; Kind = 'Variable' }, @{ Text = ' ='; Kind = 'Operator' }, @{ Text = ' new'; Kind = 'Keyword' }, @{ Text = ' List'; Kind = 'Class' }, @{ Text = '<'; Kind = 'Text' }, @{ Text = 'string'; Kind = 'Keyword' }, @{ Text = '>();'; Kind = 'Text' }),
+        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' const'; Kind = 'Keyword' }, @{ Text = ' int'; Kind = 'Keyword' }, @{ Text = ' MaxAccents'; Kind = 'Variable' }, @{ Text = ' ='; Kind = 'Operator' }, @{ Text = ' 31'; Kind = 'Number' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '        private'; Kind = 'Keyword' }, @{ Text = ' const'; Kind = 'Keyword' }, @{ Text = ' string'; Kind = 'Keyword' }, @{ Text = ' DefaultLabel'; Kind = 'Variable' }, @{ Text = ' ='; Kind = 'Operator' }, @{ Text = ' "graphite"'; Kind = 'String' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' string'; Kind = 'Keyword' }, @{ Text = ' Label'; Kind = 'Variable' }, @{ Text = ' {'; Kind = 'Text' }, @{ Text = ' get'; Kind = 'Keyword' }, @{ Text = ';'; Kind = 'Text' }, @{ Text = ' init'; Kind = 'Keyword' }, @{ Text = '; } ='; Kind = 'Text' }, @{ Text = ' DefaultLabel'; Kind = 'Variable' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' Emphasis'; Kind = 'Enum' }, @{ Text = ' Emphasis'; Kind = 'Variable' }, @{ Text = ' {'; Kind = 'Text' }, @{ Text = ' get'; Kind = 'Keyword' }, @{ Text = ';'; Kind = 'Text' }, @{ Text = ' init'; Kind = 'Keyword' }, @{ Text = '; } ='; Kind = 'Text' }, @{ Text = ' Emphasis'; Kind = 'Enum' }, @{ Text = '.Italic;'; Kind = 'Text' }),
         @(@{ Text = ''; Kind = 'Text' }),
-        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' string'; Kind = 'Type' }, @{ Text = ' Label { '; Kind = 'Text' }, @{ Text = 'get'; Kind = 'Keyword' }, @{ Text = '; '; Kind = 'Text' }, @{ Text = 'init'; Kind = 'Keyword' }, @{ Text = '; } = DefaultLabel;'; Kind = 'Text' }),
-        @(@{ Text = ''; Kind = 'Text' }),
-        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' int'; Kind = 'Type' }, @{ Text = ' ControlFlow('; Kind = 'Method' }, @{ Text = 'IEnumerable'; Kind = 'Type' }, @{ Text = '<string> items)'; Kind = 'Text' }),
+        @(@{ Text = '        public'; Kind = 'Keyword' }, @{ Text = ' int'; Kind = 'Keyword' }, @{ Text = ' ControlFlow'; Kind = 'Method' }, @{ Text = '('; Kind = 'Text' }, @{ Text = 'IEnumerable'; Kind = 'Interface' }, @{ Text = '<'; Kind = 'Text' }, @{ Text = 'string'; Kind = 'Keyword' }, @{ Text = '>'; Kind = 'Text' }, @{ Text = ' items'; Kind = 'Variable' }, @{ Text = ')'; Kind = 'Text' }),
         @(@{ Text = '        {'; Kind = 'Text' }),
-        @(@{ Text = '            var'; Kind = 'Keyword' }, @{ Text = ' total = '; Kind = 'Text' }, @{ Text = '0'; Kind = 'Number' }, @{ Text = ';'; Kind = 'Text' }),
-        @(@{ Text = '            foreach'; Kind = 'Keyword' }, @{ Text = ' (var item '; Kind = 'Text' }, @{ Text = 'in'; Kind = 'Keyword' }, @{ Text = ' items)'; Kind = 'Text' }),
+        @(@{ Text = '            var'; Kind = 'Keyword' }, @{ Text = ' total'; Kind = 'Variable' }, @{ Text = ' ='; Kind = 'Operator' }, @{ Text = ' 0'; Kind = 'Number' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '            foreach'; Kind = 'Keyword' }, @{ Text = ' ('; Kind = 'Text' }, @{ Text = 'var'; Kind = 'Keyword' }, @{ Text = ' item'; Kind = 'Variable' }, @{ Text = ' in'; Kind = 'Keyword' }, @{ Text = ' items'; Kind = 'Variable' }, @{ Text = ')'; Kind = 'Text' }),
         @(@{ Text = '            {'; Kind = 'Text' }),
-        @(@{ Text = '                if'; Kind = 'Keyword' }, @{ Text = ' (item '; Kind = 'Text' }, @{ Text = 'is null'; Kind = 'Keyword' }, @{ Text = ') '; Kind = 'Text' }, @{ Text = 'continue'; Kind = 'Keyword' }, @{ Text = ';'; Kind = 'Text' }),
-        @(@{ Text = '                switch'; Kind = 'Keyword' }, @{ Text = ' (item.Length)'; Kind = 'Text' }),
-        @(@{ Text = '                {'; Kind = 'Text' }),
-        @(@{ Text = '                    case'; Kind = 'Keyword' }, @{ Text = ' 0: '; Kind = 'Text' }, @{ Text = 'goto'; Kind = 'Keyword' }, @{ Text = ' Finished;'; Kind = 'Text' }),
-        @(@{ Text = '                    default'; Kind = 'Keyword' }, @{ Text = ': total += item.Length; '; Kind = 'Text' }, @{ Text = 'break'; Kind = 'Keyword' }, @{ Text = ';'; Kind = 'Text' }),
-        @(@{ Text = '                }'; Kind = 'Text' }),
+        @(@{ Text = '                if'; Kind = 'Keyword' }, @{ Text = ' ('; Kind = 'Text' }, @{ Text = 'item'; Kind = 'Variable' }, @{ Text = ' is null'; Kind = 'Keyword' }, @{ Text = ')'; Kind = 'Text' }, @{ Text = ' continue'; Kind = 'Keyword' }, @{ Text = ';'; Kind = 'Text' }),
+        @(@{ Text = '                total'; Kind = 'Variable' }, @{ Text = ' +='; Kind = 'Operator' }, @{ Text = ' item'; Kind = 'Variable' }, @{ Text = '.Length'; Kind = 'Text' }, @{ Text = ' <<'; Kind = 'Operator' }, @{ Text = ' 1'; Kind = 'Number' }, @{ Text = ';'; Kind = 'Text' }),
         @(@{ Text = '            }'; Kind = 'Text' }),
         @(@{ Text = ''; Kind = 'Text' }),
-        @(@{ Text = '            return'; Kind = 'Keyword' }, @{ Text = ' total >= MaxAccents ? total : -total;'; Kind = 'Text' }),
+        @(@{ Text = '            return'; Kind = 'Keyword' }, @{ Text = ' total'; Kind = 'Variable' }, @{ Text = ' >='; Kind = 'Operator' }, @{ Text = ' MaxAccents'; Kind = 'Variable' }, @{ Text = ' ?'; Kind = 'Operator' }, @{ Text = ' total'; Kind = 'Variable' }, @{ Text = ' :'; Kind = 'Operator' }, @{ Text = ' -'; Kind = 'Operator' }, @{ Text = 'total'; Kind = 'Variable' }, @{ Text = ';'; Kind = 'Text' }),
         @(@{ Text = '        }'; Kind = 'Text' }),
         @(@{ Text = '    }'; Kind = 'Text' }),
         @(@{ Text = '}'; Kind = 'Text' })
@@ -207,7 +214,10 @@ function Save-ThemePreview {
 
         $kindColors = @{
             Text = $Palette.Text; Comment = $Palette.Comment; Keyword = $Palette.Keyword
-            Type = $Palette.Type; String = $Palette.String; Number = $Palette.Number; Method = $Palette.Method
+            Class = $Palette.Class; Interface = $Palette.Interface; Record = $Palette.Record
+            Struct = $Palette.Struct; Enum = $Palette.Enum; Method = $Palette.Method
+            Variable = $Palette.Variable; Operator = $Palette.Operator
+            String = $Palette.String; Number = $Palette.Number
         }
         $codeLines = Get-CodePreviewLines
         $lineNumber = 10
@@ -219,7 +229,7 @@ function Save-ThemePreview {
                 $font = if ($segment.Kind -eq 'Keyword') { $boldFont } else { $normalFont }
                 $color = ConvertTo-DrawingColor $kindColors[$segment.Kind]
                 Write-GraphicText $graphics $segment.Text $font $color $x $y
-                $x += $graphics.MeasureString($segment.Text, $font, 2000, [System.Drawing.StringFormat]::GenericTypographic).Width
+                $x += $graphics.MeasureString($segment.Text, $font, 2000, $script:TextFormat).Width
             }
             $lineNumber++
             $y += 25
@@ -259,15 +269,17 @@ function Invoke-GenerateMarketplaceAssets {
         throw 'Sample source no longer contains the code used by the marketplace previews.'
     }
 
+    # Duplicates the palettes in FocusThemes\Themes\gen-themes.py and the two
+    # Graphite .vstheme files; update it whenever a palette changes there.
     $palettes = @(
-        @{ Family = 'GraphiteTheme'; File = 'GraphiteDark'; Name = 'Graphite Dark'; Editor = '23262E'; Chrome = '20232A'; Panel = '2B303B'; Border = '333844'; Text = 'D5CED9'; Muted = 'A0A1A7'; Gutter = '746F77'; Comment = 'A0A1A7'; Keyword = 'C74DED'; Type = 'FFE66D'; Method = '7CB7FF'; String = '96E072'; Number = 'F39C12'; Accent = '00E8C6'; IsLight = $false },
-        @{ Family = 'GraphiteTheme'; File = 'GraphiteLight'; Name = 'Graphite Light'; Editor = 'FFFFFF'; Chrome = 'F5F4F8'; Panel = 'E9E7F0'; Border = 'D3D0DC'; Text = '29252E'; Muted = '615B68'; Gutter = '746F77'; Comment = '6B6570'; Keyword = '7927A0'; Type = '7A6200'; Method = '215A9B'; String = '3E6F24'; Number = '9A5700'; Accent = '007D6A'; IsLight = $true },
-        @{ Family = 'FocusThemes'; File = 'FocusVoltage'; Name = 'Focus Voltage'; Editor = '090B10'; Chrome = '0D1017'; Panel = '0B0E14'; Border = '102A31'; Text = 'D6E1F2'; Muted = '5A6A85'; Gutter = '556070'; Comment = '5A6A85'; Keyword = 'FF2E88'; Type = '3BE8FF'; Method = '9B8CFF'; String = 'B6FF3D'; Number = 'FFC53D'; Accent = 'FF2E88'; IsLight = $false },
-        @{ Family = 'FocusThemes'; File = 'FocusUltraviolet'; Name = 'Focus Ultraviolet'; Editor = '0B0714'; Chrome = '120C1F'; Panel = '0E0918'; Border = '2D1C3E'; Text = 'E4DAFF'; Muted = '6E5A8C'; Gutter = '64577D'; Comment = '6E5A8C'; Keyword = 'C77DFF'; Type = 'FF6EC7'; Method = '6BE1FF'; String = '5CFFB1'; Number = 'FFD166'; Accent = 'C77DFF'; IsLight = $false },
-        @{ Family = 'FocusThemes'; File = 'FocusReactor'; Name = 'Focus Reactor'; Editor = '06100E'; Chrome = '0A1715'; Panel = '081310'; Border = '0C342B'; Text = 'D8F3EC'; Muted = '4E6E68'; Gutter = '49665F'; Comment = '4E6E68'; Keyword = 'FF7A1A'; Type = '2EF2C2'; Method = '63D8FF'; String = 'FFE066'; Number = 'FF4D6D'; Accent = 'FF7A1A'; IsLight = $false },
-        @{ Family = 'FocusThemes'; File = 'FocusArcade'; Name = 'Focus Arcade'; Editor = '0D0912'; Chrome = '150F1C'; Panel = '100B16'; Border = '391226'; Text = 'F2E9FF'; Muted = '6B5E7A'; Gutter = '625A6E'; Comment = '6B5E7A'; Keyword = 'FF3D7F'; Type = 'FFE94E'; Method = '4DA8FF'; String = '3DFFC9'; Number = 'FF9F1C'; Accent = 'FF3D7F'; IsLight = $false },
-        @{ Family = 'FocusThemes'; File = 'FocusSignal'; Name = 'Focus Signal'; Editor = '101116'; Chrome = '16181F'; Panel = '13151B'; Border = '2A2B30'; Text = 'E6E8EF'; Muted = '6B7280'; Gutter = '5E616A'; Comment = '6B7280'; Keyword = 'FF5C39'; Type = '35C2FF'; Method = 'C084FC'; String = '4ADE80'; Number = 'FBBF24'; Accent = 'FF5C39'; IsLight = $false },
-        @{ Family = 'FocusThemes'; File = 'FocusNightdive'; Name = 'Focus Nightdive'; Editor = '040F14'; Chrome = '08171D'; Panel = '061319'; Border = '103130'; Text = 'D2ECF2'; Muted = '4A6B75'; Gutter = '47636A'; Comment = '4A6B75'; Keyword = '4DE1C1'; Type = 'FF6B6B'; Method = '59B8FF'; String = 'C6FF4D'; Number = 'FFC24D'; Accent = '4DE1C1'; IsLight = $false }
+        @{ Family = 'GraphiteTheme'; File = 'GraphiteDark'; Name = 'Graphite Dark'; Editor = '23262E'; Chrome = '20232A'; Panel = '2B303B'; Border = '333844'; Text = 'D5CED9'; Muted = 'A0A1A7'; Gutter = '746F77'; Comment = 'A0A1A7'; Keyword = 'C74DED'; Class = 'FFE66D'; Interface = 'FFE66D'; Record = 'FFE66D'; Struct = 'FFE66D'; Enum = 'FFE66D'; Method = '7CB7FF'; Variable = '00E8C6'; Operator = 'EE5D43'; String = '96E072'; Number = 'F39C12'; Accent = '00E8C6'; IsLight = $false },
+        @{ Family = 'GraphiteTheme'; File = 'GraphiteLight'; Name = 'Graphite Light'; Editor = 'FFFFFF'; Chrome = 'F5F4F8'; Panel = 'E9E7F0'; Border = 'D3D0DC'; Text = '29252E'; Muted = '615B68'; Gutter = '746F77'; Comment = '6B6570'; Keyword = '7927A0'; Class = '7A6200'; Interface = '7A6200'; Record = '7A6200'; Struct = '7A6200'; Enum = '7A6200'; Method = '215A9B'; Variable = '007D6A'; Operator = 'C0341C'; String = '3E6F24'; Number = '9A5700'; Accent = '007D6A'; IsLight = $true },
+        @{ Family = 'FocusThemes'; File = 'FocusVoltage'; Name = 'Focus Voltage'; Editor = '090B10'; Chrome = '0D1017'; Panel = '0B0E14'; Border = '102A31'; Text = 'D6E1F2'; Muted = '5A6A85'; Gutter = '556070'; Comment = '5A6A85'; Keyword = 'FF2E88'; Class = '3BE8FF'; Interface = '6FFFD1'; Record = 'B6FF3D'; Struct = 'FFD24D'; Enum = 'FF7A1A'; Method = '9B8CFF'; Variable = 'AEBED6'; Operator = 'FF9EC4'; String = '4ADE80'; Number = 'FFF275'; Accent = 'FF2E88'; IsLight = $false },
+        @{ Family = 'FocusThemes'; File = 'FocusUltraviolet'; Name = 'Focus Ultraviolet'; Editor = '0B0714'; Chrome = '120C1F'; Panel = '0E0918'; Border = '2D1C3E'; Text = 'E4DAFF'; Muted = '6E5A8C'; Gutter = '64577D'; Comment = '6E5A8C'; Keyword = 'C77DFF'; Class = 'FF6EC7'; Interface = 'FFB3E3'; Record = '6BE1FF'; Struct = '5CFFB1'; Enum = 'FF9060'; Method = 'FFD166'; Variable = 'B7ABD4'; Operator = 'E0BFFF'; String = 'A3FF6B'; Number = 'FFF3A3'; Accent = 'C77DFF'; IsLight = $false },
+        @{ Family = 'FocusThemes'; File = 'FocusReactor'; Name = 'Focus Reactor'; Editor = '06100E'; Chrome = '0A1715'; Panel = '081310'; Border = '0C342B'; Text = 'D8F3EC'; Muted = '4E6E68'; Gutter = '49665F'; Comment = '4E6E68'; Keyword = 'FF7A1A'; Class = '2EF2C2'; Interface = '9FFFE3'; Record = 'A78BFA'; Struct = 'FF6EA9'; Enum = '63D8FF'; Method = 'FFE066'; Variable = 'A9C7C0'; Operator = 'FFB27A'; String = 'C6FF4D'; Number = 'E8FF9E'; Accent = 'FF7A1A'; IsLight = $false },
+        @{ Family = 'FocusThemes'; File = 'FocusArcade'; Name = 'Focus Arcade'; Editor = '0D0912'; Chrome = '150F1C'; Panel = '100B16'; Border = '391226'; Text = 'F2E9FF'; Muted = '6B5E7A'; Gutter = '625A6E'; Comment = '6B5E7A'; Keyword = 'FF3D7F'; Class = 'FFE94E'; Interface = 'FFF9C4'; Record = 'FF9F1C'; Struct = '3DFFC9'; Enum = 'C084FC'; Method = '4DA8FF'; Variable = 'C0B4D1'; Operator = 'FF9CC0'; String = '9FFF6B'; Number = 'D9FFB3'; Accent = 'FF3D7F'; IsLight = $false },
+        @{ Family = 'FocusThemes'; File = 'FocusSignal'; Name = 'Focus Signal'; Editor = '101116'; Chrome = '16181F'; Panel = '13151B'; Border = '2A2B30'; Text = 'E6E8EF'; Muted = '6B7280'; Gutter = '5E616A'; Comment = '6B7280'; Keyword = 'FF5C39'; Class = '35C2FF'; Interface = 'A5DEFF'; Record = 'C084FC'; Struct = '2DD4BF'; Enum = 'F472B6'; Method = 'FBBF24'; Variable = 'B4BAC7'; Operator = 'FF9E85'; String = '4ADE80'; Number = 'A3E635'; Accent = 'FF5C39'; IsLight = $false },
+        @{ Family = 'FocusThemes'; File = 'FocusNightdive'; Name = 'Focus Nightdive'; Editor = '040F14'; Chrome = '08171D'; Panel = '061319'; Border = '103130'; Text = 'D2ECF2'; Muted = '4A6B75'; Gutter = '47636A'; Comment = '4A6B75'; Keyword = 'FF6B6B'; Class = '4DE1C1'; Interface = 'A8F5E6'; Record = 'C6FF4D'; Struct = 'B39BFF'; Enum = 'FF9BD2'; Method = '59B8FF'; Variable = 'A3BFC7'; Operator = 'FFA8A8'; String = 'FFC24D'; Number = 'FFE3A8'; Accent = '4DE1C1'; IsLight = $false }
     )
 
     Save-GraphiteIcon -Path (Join-Path $OutputRoot 'GraphiteTheme\icon.png')

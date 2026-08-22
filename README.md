@@ -3,9 +3,11 @@
 Two theme families for Visual Studio, packaged as independent VSIX extensions:
 
 - **Graphite Theme** — a warm-grey light theme and a near-black dark theme.
-- **Focus Themes** — six high-separation dark themes designed for fast scanning: Voltage, Ultraviolet, Reactor, Arcade, Signal, and Nightdive.
+- **Focus Themes** — six high-separation dark themes designed for fast scanning, each giving the five C# type kinds (class, interface, record, struct, and enum) a color of their own: Voltage, Ultraviolet, Reactor, Arcade, Signal, and Nightdive.
 
 Both extensions target Visual Studio versions 17.9 through 18.x on AMD64 and ARM64.
+
+Per-theme palette tables and the color-role reference live in the [project wiki](https://github.com/vpcmps/GraphiteTheme/wiki).
 
 ## Installation
 
