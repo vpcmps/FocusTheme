@@ -1,5 +1,10 @@
 # Graphite and Focus Themes for Visual Studio
 
+[![Release](https://img.shields.io/github/v/release/vpcmps/GraphiteTheme?display_name=tag&sort=semver)](https://github.com/vpcmps/GraphiteTheme/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/vpcmps/GraphiteTheme/total)](https://github.com/vpcmps/GraphiteTheme/releases)
+[![CI](https://github.com/vpcmps/GraphiteTheme/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vpcmps/GraphiteTheme/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/vpcmps/GraphiteTheme)](https://github.com/vpcmps/GraphiteTheme/blob/main/LICENSE.txt)
+
 Two theme families for Visual Studio, packaged as independent VSIX extensions:
 
 - **Graphite Theme** — a warm-grey light theme and a near-black dark theme.
