@@ -16,6 +16,13 @@ Per-theme palette tables and the color-role reference live in the [project wiki]
 
 ## Installation
 
+### Visual Studio Marketplace
+
+- [Graphite Theme](https://marketplace.visualstudio.com/items?itemName=vpcampos.GraphiteTheme)
+- [Focus Themes](https://marketplace.visualstudio.com/items?itemName=vpcampos.FocusThemes)
+
+Open **Extensions > Manage Extensions** in Visual Studio, search for the extension name, and choose **Download**.
+
 ### GitHub Releases
 
 Download the matching `.vsix` from the latest [GitHub Release](https://github.com/vpcmps/GraphiteTheme/releases), close Visual Studio, and run the package. Verify the downloaded file against `SHA256SUMS.txt` before installation.
