@@ -25,6 +25,40 @@ Describe 'Build-Release version contract' {
     }
 }
 
+Describe 'Marketplace metadata limits' {
+    It 'holds both shipped manifests inside the publisher limits' {
+        foreach ($name in 'GraphiteTheme', 'FocusThemes') {
+            $metadata = Get-VsixManifestMetadata -Path (Join-Path $repoRoot "$name\source.extension.vsixmanifest")
+            Assert-MarketplaceMetadataLimits -Metadata $metadata -Name $name
+            $metadata.Description.Trim().Length -lt 280 | Should Be $true
+            $metadata.Tags.Trim().Length -le 50 | Should Be $true
+        }
+    }
+
+    It 'rejects a description at or over 280 characters' {
+        # VsixPub0024. 279 is the last accepted length.
+        $ok = [pscustomobject]@{ Description = 'x' * 279; Tags = 'theme' }
+        $over = [pscustomobject]@{ Description = 'x' * 280; Tags = 'theme' }
+        Test-Throws { Assert-MarketplaceMetadataLimits -Metadata $ok -Name 'sample' } | Should Be $false
+        Test-Throws { Assert-MarketplaceMetadataLimits -Metadata $over -Name 'sample' } | Should Be $true
+    }
+
+    It 'measures the whole Tags element against the 50-character limit' {
+        # VsixPub0023: VsixPublisher does not split Tags on commas, so a list of
+        # individually short tags still fails once the string passes 50.
+        $long = 'theme, color theme, dark, high contrast, focus, adhd, accessibility'
+        $metadata = [pscustomobject]@{ Description = 'A theme.'; Tags = $long }
+        Test-Throws { Assert-MarketplaceMetadataLimits -Metadata $metadata -Name 'sample' } | Should Be $true
+    }
+
+    It 'rejects a missing description or tags' {
+        $noDescription = [pscustomobject]@{ Description = '  '; Tags = 'theme' }
+        $noTags = [pscustomobject]@{ Description = 'A theme.'; Tags = '' }
+        Test-Throws { Assert-MarketplaceMetadataLimits -Metadata $noDescription -Name 'sample' } | Should Be $true
+        Test-Throws { Assert-MarketplaceMetadataLimits -Metadata $noTags -Name 'sample' } | Should Be $true
+    }
+}
+
 Describe 'Repository publisher contract' {
     It 'uses the public publisher name in both VSIX manifests' {
         foreach ($manifestPath in @(

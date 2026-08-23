@@ -40,6 +40,9 @@ function Get-VsixManifestMetadataFromXml {
         Icon         = Get-MetadataElementValue 'Icon'
         PreviewImage = Get-MetadataElementValue 'PreviewImage'
         License      = Get-MetadataElementValue 'License'
+        DisplayName  = Get-MetadataElementValue 'DisplayName'
+        Description  = Get-MetadataElementValue 'Description'
+        Tags         = Get-MetadataElementValue 'Tags'
     }
 }
 
@@ -53,6 +56,46 @@ function Get-VsixManifestMetadata {
 
     [xml]$xml = Get-Content -Raw -LiteralPath $Path
     return Get-VsixManifestMetadataFromXml -Xml $xml
+}
+
+function Assert-MarketplaceMetadataLimits {
+    <#
+    .SYNOPSIS
+        Enforces the metadata limits VsixPublisher.exe applies when publishing.
+    .DESCRIPTION
+        These are checked here rather than left to publish time because the
+        release workflow publishes one extension before the other: a violation
+        in the second one is only discovered after the first is already live and
+        the tag is already cut, which costs a version number to fix.
+
+        Both limits below were found that way. Each is keyed to the error code
+        VsixPublisher reports, so a future failure can be traced back here.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$Metadata,
+        [Parameter(Mandatory)][string]$Name
+    )
+
+    # VsixPub0024: the description must be set and under 280 characters.
+    $description = [string]$Metadata.Description
+    if ([string]::IsNullOrWhiteSpace($description)) {
+        throw "$Name has no Description; the Marketplace requires one (VsixPub0024)."
+    }
+    if ($description.Trim().Length -ge 280) {
+        throw ("$Name has a Description of {0} characters; the Marketplace limit is under 280 (VsixPub0024)." -f $description.Trim().Length)
+    }
+
+    # VsixPub0023: the whole Tags element is measured as a single tag, because
+    # VsixPublisher does not split it on commas. A comma-separated list is
+    # therefore limited to 50 characters in total, not 50 characters per tag.
+    $tags = [string]$Metadata.Tags
+    if ([string]::IsNullOrWhiteSpace($tags)) {
+        throw "$Name has no Tags element."
+    }
+    if ($tags.Trim().Length -gt 50) {
+        throw ("$Name has a Tags string of {0} characters; VsixPublisher measures the whole element as one tag against a 50-character limit (VsixPub0023). Put the full list in vs-publish.json under identity.tags instead." -f $tags.Trim().Length)
+    }
 }
 
 function Assert-ManifestContract {
@@ -252,6 +295,9 @@ function Invoke-BuildRelease {
             -ExpectedVersion $ExpectedVersion `
             -ExpectedPublisherDisplayName 'Vinícius Campos' `
             -ExpectedId $extension.Identity
+        Assert-MarketplaceMetadataLimits `
+            -Metadata $sourceMetadata[$extension.Name] `
+            -Name $extension.Name
         Assert-MarketplaceManifestContract `
             -Path $extension.PublishPath `
             -ExpectedPublisherId 'vpcampos' `
@@ -287,6 +333,7 @@ function Invoke-BuildRelease {
             -ExpectedVersion $ExpectedVersion `
             -ExpectedPublisherDisplayName 'Vinícius Campos' `
             -ExpectedId $extension.Identity
+        Assert-MarketplaceMetadataLimits -Metadata $packagedMetadata -Name $extension.Name
         Assert-PackagedVsixAssets -Path $destinationVsix -Metadata $packagedMetadata
 
         $releaseFiles += Get-Item -LiteralPath $destinationVsix
