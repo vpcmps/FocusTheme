@@ -62,7 +62,11 @@ function Get-VisualStudioInstallation {
         if (-not (Test-Path -LiteralPath $InstallationPath -PathType Container)) {
             throw "Visual Studio installation not found: $InstallationPath"
         }
-        return [pscustomobject]@{ Path = $InstallationPath; Version = 'unknown' }
+        return [pscustomobject]@{
+            Path        = $InstallationPath
+            Version     = 'unknown'
+            DisplayName = 'unknown'
+        }
     }
 
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
