@@ -126,6 +126,144 @@ function Assert-ManifestContract {
     }
 }
 
+function Get-ThemeForegrounds {
+    <#
+    .SYNOPSIS
+        Every stated foreground in a .vstheme, keyed "category/colour".
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path)
+
+    [xml]$xml = Get-Content -Raw -LiteralPath $Path
+    $out = @{}
+    foreach ($category in $xml.SelectNodes("//*[local-name()='Category']")) {
+        foreach ($colour in $category.SelectNodes("*[local-name()='Color']")) {
+            $foreground = $colour.SelectSingleNode("*[local-name()='Foreground']")
+            if ($null -eq $foreground) { continue }
+            if ([string]$foreground.Type -ne 'CT_RAW') { continue }
+            # Source is AARRGGBB; the package stores the colour without alpha.
+            $out["$($category.Name)/$($colour.Name)"] = ([string]$foreground.Source).Substring(2)
+        }
+    }
+    return $out
+}
+
+function Get-PkgdefForegrounds {
+    <#
+    .SYNOPSIS
+        Every foreground in a compiled .pkgdef, keyed "category/colour".
+    .DESCRIPTION
+        Each category's Data value is a binary blob:
+
+            length(4) version(4) count(4) categoryGuid(16) colourCount(4)
+            then per colour: nameLen(4) name bgType(1) [value(4)] fgType(1) [value(4)]
+
+        The type byte says whether a value follows. CT_AUTOMATIC carries one just
+        as CT_RAW does, stored as zeroes rather than omitted, so treating "not
+        CT_RAW" as "no bytes" desynchronises the reader partway through a
+        category and every later name decodes as garbage.
+
+        Colour values are stored R,G,B,A - not the A,R,G,B the .vstheme spells.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][byte[]]$Content)
+
+    $text = [System.Text.Encoding]::UTF8.GetString($Content)
+    $pattern = '\[\$RootKey\$\\Themes\\\{[^}]+\}\\([^\]]+)\]\s*\r?\n"Data"=hex:([0-9a-fA-F,\\\s]+)'
+
+    $out = @{}
+    foreach ($match in [regex]::Matches($text, $pattern)) {
+        $category = $match.Groups[1].Value
+        $hex = [regex]::Replace($match.Groups[2].Value, '[^0-9a-fA-F]', '')
+        $blob = [byte[]]::new($hex.Length / 2)
+        for ($i = 0; $i -lt $blob.Length; $i++) {
+            $blob[$i] = [System.Convert]::ToByte($hex.Substring($i * 2, 2), 16)
+        }
+
+        $position = 12 + 16
+        $colourCount = [System.BitConverter]::ToInt32($blob, $position)
+        $position += 4
+
+        for ($index = 0; $index -lt $colourCount; $index++) {
+            $nameLength = [System.BitConverter]::ToInt32($blob, $position)
+            $position += 4
+            $name = [System.Text.Encoding]::ASCII.GetString($blob, $position, $nameLength)
+            $position += $nameLength
+
+            $values = @($null, $null)
+            for ($role = 0; $role -lt 2; $role++) {
+                $valueType = $blob[$position]
+                $position += 1
+                if ($valueType -eq 0) { continue }
+                if ($valueType -eq 1) {
+                    $values[$role] = '{0:X2}{1:X2}{2:X2}' -f $blob[$position], $blob[$position + 1], $blob[$position + 2]
+                }
+                $position += 4
+            }
+
+            if ($null -ne $values[1]) { $out["$category/$name"] = $values[1] }
+        }
+
+        if ($position -ne $blob.Length) {
+            throw "Decoded $position of $($blob.Length) byte(s) in category '$category'; the .pkgdef layout assumption is wrong."
+        }
+    }
+    return $out
+}
+
+function Assert-PackagedThemeColors {
+    <#
+    .SYNOPSIS
+        Confirms the packaged .pkgdef still carries the colours the .vstheme states.
+    .DESCRIPTION
+        The .vstheme is the source, but Visual Studio reads the .pkgdef the VSSDK
+        compiles from it. Nothing between the two was checked, so a colour lost
+        or mangled in that step would have shipped silently - the tests validate
+        the source, and the source would still be correct.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$ThemeDirectory
+    )
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path -LiteralPath $Path))
+    try {
+        $entries = @($archive.Entries | Where-Object { $_.FullName -like 'Themes/*.pkgdef' })
+        if ($entries.Count -eq 0) {
+            throw "The package '$Path' contains no theme .pkgdef files."
+        }
+
+        foreach ($entry in $entries) {
+            $themeName = [System.IO.Path]::GetFileNameWithoutExtension($entry.Name)
+            $source = Join-Path $ThemeDirectory "$themeName.vstheme"
+            if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+                throw "The package contains '$($entry.Name)' but no matching source theme at '$source'."
+            }
+
+            $stream = $entry.Open()
+            try {
+                $buffer = [System.IO.MemoryStream]::new()
+                $stream.CopyTo($buffer)
+                $packaged = Get-PkgdefForegrounds -Content $buffer.ToArray()
+            }
+            finally { $stream.Dispose() }
+
+            $expected = Get-ThemeForegrounds -Path $source
+            foreach ($key in $expected.Keys) {
+                if (-not $packaged.ContainsKey($key)) {
+                    throw "$themeName is missing '$key' in the packaged theme."
+                }
+                if ($packaged[$key] -ne $expected[$key]) {
+                    throw "$themeName '$key' is #$($packaged[$key]) in the package but #$($expected[$key]) in the source theme."
+                }
+            }
+        }
+    }
+    finally { $archive.Dispose() }
+}
+
 function Get-PackagedVsixMetadata {
     [CmdletBinding()]
     param([Parameter(Mandatory)][string]$Path)
@@ -335,6 +473,9 @@ function Invoke-BuildRelease {
             -ExpectedId $extension.Identity
         Assert-MarketplaceMetadataLimits -Metadata $packagedMetadata -Name $extension.Name
         Assert-PackagedVsixAssets -Path $destinationVsix -Metadata $packagedMetadata
+        Assert-PackagedThemeColors `
+            -Path $destinationVsix `
+            -ThemeDirectory (Join-Path $repoRoot "$($extension.Project)\Themes")
 
         $releaseFiles += Get-Item -LiteralPath $destinationVsix
     }
