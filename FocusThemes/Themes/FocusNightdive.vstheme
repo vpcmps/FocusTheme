@@ -7,7 +7,7 @@
        Surfaces: editor #040F14 / chrome #08171D / panel #061319
                  raised #18282E / border #103130 / selection #2D3B40
        Text:     #D2ECF2 primary, #4A6B75 comment, #47636A gutter
-       Types:    class #4DE1C1, interface #A8F5E6, record #C6FF4D,
+       Types:    class #4DE1C1, interface #4DF2A0, record #C6FF4D,
                  struct #B39BFF, enum #FF9BD2
        Syntax:   keyword #FF6B6B, method #59B8FF, variable #A3BFC7,
                  operator #FFA8A8, string #FFC24D, number #FFE3A8
@@ -246,7 +246,7 @@
         <Foreground Type="CT_RAW" Source="FFB39BFF"/>
       </Color>
       <Color Name="User Types(Interfaces)">
-        <Foreground Type="CT_RAW" Source="FFA8F5E6"/>
+        <Foreground Type="CT_RAW" Source="FF4DF2A0"/>
       </Color>
       <Color Name="User Types(Delegates)">
         <Foreground Type="CT_RAW" Source="FF4DE1C1"/>
@@ -379,7 +379,7 @@
         <Foreground Type="CT_RAW" Source="FF4DE1C1"/>
       </Color>
       <Color Name="interface name">
-        <Foreground Type="CT_RAW" Source="FFA8F5E6"/>
+        <Foreground Type="CT_RAW" Source="FF4DF2A0"/>
       </Color>
       <Color Name="type parameter name">
         <Foreground Type="CT_RAW" Source="FF4DE1C1"/>

@@ -30,13 +30,13 @@ The loudest of the six: saturated hues at near-equal weight, with nothing recedi
 
 ![Focus Signal preview](images/FocusSignal.png)
 
-The restrained option. A neutral grey-black ground, one orange-red accent for keywords, cooler hues for everything else. All five type kinds still separate cleanly — blue classes, pale-blue italic interfaces, violet records, teal structs, pink enums — but nothing shouts. Amber methods, green strings, lime numbers.
+The restrained option. A neutral grey-black ground, one orange-red accent for keywords, cooler hues for everything else. All five type kinds still separate cleanly — blue classes, periwinkle italic interfaces, violet records, teal structs, pink enums — but nothing shouts. Amber methods, green strings, lime numbers.
 
 ## Nightdive
 
 ![Focus Nightdive preview](images/FocusNightdive.png)
 
-Deep teal-black with coral keywords, teal classes and a pale-teal italic for interfaces, chartreuse records and lavender structs paired as complements so declarations never blur together in dense files. Pink enums, blue methods, amber strings. The only variant whose accent is not its keyword color: the teal that marks classes carries the status bar and active-tab underline instead.
+Deep teal-black with coral keywords, teal classes and a spring-green italic for interfaces, chartreuse records and lavender structs paired as complements so declarations never blur together in dense files. Pink enums, blue methods, amber strings. The only variant whose accent is not its keyword color: the teal that marks classes carries the status bar and active-tab underline instead.
 
 ## Features
 
