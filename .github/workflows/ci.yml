@@ -62,7 +62,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: "20"
 
       - name: Package extension
         working-directory: vscode
@@ -89,15 +89,22 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: "21"
 
       # No wrapper is committed: the plugin has no source of its own, so pinning
       # a Gradle build of Gradle itself buys nothing. Run `gradle wrapper` locally
       # if you want one.
+      #
+      # The version is quoted because YAML would otherwise read 8.10 as the number
+      # 8.1 and install that instead - which then fails on Java 21 bytecode with an
+      # error that says nothing about versions at all.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.10
+          gradle-version: "8.10"
+
+      - name: Report toolchain
+        run: gradle --version
 
       - name: Build plugin
         working-directory: jetbrains/plugin
