@@ -94,7 +94,6 @@
       </Color>
       <Color Name="ToolWindowBackground">
         <Background Type="CT_RAW" Source="FF061319"/>
-        <Foreground Type="CT_RAW" Source="FFD2ECF2"/>
       </Color>
       <Color Name="BrandedUIBackground">
         <Background Type="CT_RAW" Source="FF040F14"/>
@@ -102,17 +101,33 @@
       <Color Name="ScrollBarBackground">
         <Background Type="CT_RAW" Source="FF040F14"/>
       </Color>
+      <!-- Text in this category lives in the Background slot. Background and
+           Foreground are the two slots of a colour entry, not "fill" and "text":
+           a colour named ...Text or ...Glyph is single-slot, and Visual Studio
+           has nowhere to put a Foreground stated on one. It drops it silently -
+           no error, no log - so the theme installs and simply does not paint.
+           These three are what the Test Explorer and every other tool window
+           bind to; without them the whole text layer falls back to Dark. -->
+      <Color Name="ToolWindowText">
+        <Background Type="CT_RAW" Source="FFD2ECF2"/>
+      </Color>
+      <Color Name="WindowText">
+        <Background Type="CT_RAW" Source="FFD2ECF2"/>
+      </Color>
+      <Color Name="GridHeadingText">
+        <Background Type="CT_RAW" Source="FFD2ECF2"/>
+      </Color>
       <Color Name="CommandBarTextActive">
-        <Foreground Type="CT_RAW" Source="FFD2ECF2"/>
+        <Background Type="CT_RAW" Source="FFD2ECF2"/>
       </Color>
       <Color Name="CommandBarTextHover">
-        <Foreground Type="CT_RAW" Source="FFFFFFFF"/>
+        <Background Type="CT_RAW" Source="FFFFFFFF"/>
       </Color>
       <Color Name="CommandBarTextInactive">
-        <Foreground Type="CT_RAW" Source="FF47636A"/>
+        <Background Type="CT_RAW" Source="FF47636A"/>
       </Color>
       <Color Name="CommandBarMenuGlyph">
-        <Foreground Type="CT_RAW" Source="FFD2ECF2"/>
+        <Background Type="CT_RAW" Source="FFD2ECF2"/>
       </Color>
     </Category>
 
@@ -176,18 +191,12 @@
         <Background Type="CT_RAW" Source="FF1B272C"/>
         <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
-      <Color Name="Line Number">
-        <Foreground Type="CT_RAW" Source="FF47636A"/>
-      </Color>
-      <Color Name="Selected Line Number">
-        <Foreground Type="CT_RAW" Source="FFD2ECF2"/>
-      </Color>
       <Color Name="Visible Whitespace">
         <Foreground Type="CT_RAW" Source="FF103130"/>
       </Color>
+      <!-- Indicator Margin is background-only; a Foreground here has no slot. -->
       <Color Name="Indicator Margin">
         <Background Type="CT_RAW" Source="FF040F14"/>
-        <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
     </Category>
 
@@ -394,8 +403,8 @@
       <Color Name="extension method name">
         <Foreground Type="CT_RAW" Source="FF59B8FF"/>
       </Color>
-      <!-- Variables: their own hue, as in Graphite. The design mockups leave
-           identifiers at plain text, but that collapses locals, fields and
+      <!-- Variables: their own hue. The design mockups leave identifiers at
+           plain text, but that collapses locals, fields and
            properties into the same read as punctuation and operators; giving
            them a hue is what makes "what is this name" answerable at a glance. -->
       <Color Name="local name">
@@ -466,6 +475,68 @@
       </Color>
       <Color Name="xml doc comment - cdata section">
         <Foreground Type="CT_RAW" Source="FF4A6B75"/>
+      </Color>
+      <!-- An attribute inside a doc tag - <typeparam name="T"> - is three more
+           classifications, not part of "name". Left out, they render in Dark's
+           colours in the middle of an otherwise themed comment. -->
+      <Color Name="xml doc comment - attribute name">
+        <Foreground Type="CT_RAW" Source="FF4DE1C1"/>
+      </Color>
+      <Color Name="xml doc comment - attribute value">
+        <Foreground Type="CT_RAW" Source="FFFFC24D"/>
+      </Color>
+      <Color Name="xml doc comment - attribute quotes">
+        <Foreground Type="CT_RAW" Source="FF47636A"/>
+      </Color>
+      <Color Name="xml doc comment - entity reference">
+        <Foreground Type="CT_RAW" Source="FFFFE3A8"/>
+      </Color>
+      <Color Name="xml doc comment - processing instruction">
+        <Foreground Type="CT_RAW" Source="FF47636A"/>
+      </Color>
+      <!-- The gutter. Visual Studio registers both of these under MEF Items, not
+           under Text Manager Items where a line number intuitively belongs. -->
+      <Color Name="Line Number">
+        <Foreground Type="CT_RAW" Source="FF47636A"/>
+      </Color>
+      <Color Name="Selected Line Number">
+        <Foreground Type="CT_RAW" Source="FFD2ECF2"/>
+      </Color>
+      <!-- The inactive side of an #if. Recessive on purpose: it is the one thing
+           on screen that is not compiled. -->
+      <Color Name="Excluded Code">
+        <Foreground Type="CT_RAW" Source="FF47636A"/>
+      </Color>
+      <!-- Hints are the editor talking, not the code. They sit on the raised
+           surface so they read as an overlay rather than as text. -->
+      <Color Name="inlay hints">
+        <Background Type="CT_RAW" Source="FF18282E"/>
+        <Foreground Type="CT_RAW" Source="FF4A6B75"/>
+      </Color>
+      <Color Name="inline parameter name hints">
+        <Foreground Type="CT_RAW" Source="FF4A6B75"/>
+      </Color>
+      <Color Name="inline hints">
+        <Background Type="CT_RAW" Source="FF18282E"/>
+        <Foreground Type="CT_RAW" Source="FF4A6B75"/>
+      </Color>
+      <!-- Inline diagnostics are the compiler answering back at the end of the
+           line. Errors take the keyword hue, which is each palette's loudest and
+           is otherwise reserved for a mismatched brace; warnings take the enum
+           hue, which is warm in every direction without being the alarm colour;
+           Edit and Continue is informational and recedes to comment. -->
+      <Color Name="inline diagnostics - syntax error">
+        <Foreground Type="CT_RAW" Source="FFFF6B6B"/>
+      </Color>
+      <Color Name="inline diagnostics - compiler warning">
+        <Foreground Type="CT_RAW" Source="FFFF9BD2"/>
+      </Color>
+      <Color Name="inline diagnostics - Edit and Continue">
+        <Foreground Type="CT_RAW" Source="FF4A6B75"/>
+      </Color>
+      <!-- Roslyn ships `record name` alongside the two specific record kinds. -->
+      <Color Name="record name">
+        <Foreground Type="CT_RAW" Source="FFC6FF4D"/>
       </Color>
       <!-- Brace pairs -->
       <Color Name="brace pair level one">

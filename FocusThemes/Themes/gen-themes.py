@@ -2,8 +2,7 @@
 
 The Focus family is six dark themes that share a structure and differ only in
 colour, so the structure lives here once and the palettes live in PALETTES.
-This mirrors the role derive-light.py plays in GraphiteTheme: not shipped in the
-VSIX, run by hand when a palette changes, output committed.
+Not shipped in the VSIX: run by hand when a palette changes, output committed.
 
 Palettes come from the "Visual Studio ADHD color scheme" design explorations.
 Every direction there supplies twelve named swatches plus a full editor mockup,
@@ -31,7 +30,7 @@ FALLBACK = "{1ded0138-47ce-435e-84ef-9ec1f439b749}"
 #   text/comment      plain text and the COMMENT swatch
 #   linenum           the mockup's line-number grey, lifted to 3:1 below
 #   accent            the hue the mockup's status bar and active-tab underline use
-#   keyword..operator the twelve named swatches, on the Graphite role taxonomy
+#   keyword..operator the twelve named swatches, on the shared role taxonomy
 #   border            tint + alpha of the card's own 1px border, flattened onto bg
 #
 # The design separates all five C# type kinds. `class` carries each direction's
@@ -250,14 +249,45 @@ def derive(p):
     # keyword hue is reserved: a mismatched brace uses it, and that warning only
     # reads as a warning if nothing else on the line is already wearing it.
     d["brace1"], d["brace2"], d["brace3"] = p["class"], p["method"], p["string"]
+    d["regex"] = regex_block(p)
     return d
+
+
+# Roslyn classifies the inside of a regex literal into nine parts. None of the
+# six palettes supplies hues for them yet, and picking them here would invent
+# colour the design never stated - the one thing this generator does not do.
+#
+# Until the swatches arrive, this emits nothing and all nine fall back to the
+# built-in Dark, which is what shipped before. To turn them on, give each palette
+# a "regex" dict with these nine keys and delete the guard below:
+#
+#     "regex": {"text": "...", "character class": "...", "quantifier": "...",
+#               "anchor": "...", "grouping": "...", "alternation": "...",
+#               "comment": "...", "other escape": "...",
+#               "self escaped character": "..."},
+REGEX_PARTS = ("text", "character class", "quantifier", "anchor", "grouping",
+               "alternation", "comment", "other escape", "self escaped character")
+
+
+def regex_block(p):
+    """The nine `regex - *` entries, or nothing while the palette has no hues."""
+    hues = p.get("regex")
+    if not hues:
+        return ""
+    missing = [k for k in REGEX_PARTS if k not in hues]
+    if missing:
+        raise SystemExit("%s: regex palette is missing %s" % (p["name"], ", ".join(missing)))
+    return "      <!-- Regex literal internals -->\n" + "".join(
+        '      <Color Name="regex - %s">\n'
+        '        <Foreground Type="CT_RAW" Source="FF%s"/>\n'
+        '      </Color>\n' % (part, hues[part]) for part in REGEX_PARTS)
 
 
 # ---------------------------------------------------------------------------
 # Theme template
 # ---------------------------------------------------------------------------
-# Category GUIDs and colour names are Visual Studio's own and are identical to
-# GraphiteDark.vstheme; only the Source values differ between themes.
+# Category GUIDs and colour names are Visual Studio's own; only the Source values
+# differ between themes.
 
 TEMPLATE = """<Themes>
   <!-- %(name)s
@@ -352,7 +382,6 @@ TEMPLATE = """<Themes>
       </Color>
       <Color Name="ToolWindowBackground">
         <Background Type="CT_RAW" Source="FF%(panel)s"/>
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
       <Color Name="BrandedUIBackground">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
@@ -360,17 +389,33 @@ TEMPLATE = """<Themes>
       <Color Name="ScrollBarBackground">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
       </Color>
+      <!-- Text in this category lives in the Background slot. Background and
+           Foreground are the two slots of a colour entry, not "fill" and "text":
+           a colour named ...Text or ...Glyph is single-slot, and Visual Studio
+           has nowhere to put a Foreground stated on one. It drops it silently -
+           no error, no log - so the theme installs and simply does not paint.
+           These three are what the Test Explorer and every other tool window
+           bind to; without them the whole text layer falls back to Dark. -->
+      <Color Name="ToolWindowText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <Color Name="WindowText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <Color Name="GridHeadingText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
       <Color Name="CommandBarTextActive">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
       <Color Name="CommandBarTextHover">
-        <Foreground Type="CT_RAW" Source="FFFFFFFF"/>
+        <Background Type="CT_RAW" Source="FFFFFFFF"/>
       </Color>
       <Color Name="CommandBarTextInactive">
-        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+        <Background Type="CT_RAW" Source="FF%(muted)s"/>
       </Color>
       <Color Name="CommandBarMenuGlyph">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
     </Category>
 
@@ -434,18 +479,12 @@ TEMPLATE = """<Themes>
         <Background Type="CT_RAW" Source="FF%(isel)s"/>
         <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
-      <Color Name="Line Number">
-        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
-      </Color>
-      <Color Name="Selected Line Number">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
-      </Color>
       <Color Name="Visible Whitespace">
         <Foreground Type="CT_RAW" Source="FF%(border)s"/>
       </Color>
+      <!-- Indicator Margin is background-only; a Foreground here has no slot. -->
       <Color Name="Indicator Margin">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
-        <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
     </Category>
 
@@ -652,8 +691,8 @@ TEMPLATE = """<Themes>
       <Color Name="extension method name">
         <Foreground Type="CT_RAW" Source="FF%(method)s"/>
       </Color>
-      <!-- Variables: their own hue, as in Graphite. The design mockups leave
-           identifiers at plain text, but that collapses locals, fields and
+      <!-- Variables: their own hue. The design mockups leave identifiers at
+           plain text, but that collapses locals, fields and
            properties into the same read as punctuation and operators; giving
            them a hue is what makes "what is this name" answerable at a glance. -->
       <Color Name="local name">
@@ -725,6 +764,68 @@ TEMPLATE = """<Themes>
       <Color Name="xml doc comment - cdata section">
         <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
       </Color>
+      <!-- An attribute inside a doc tag - <typeparam name="T"> - is three more
+           classifications, not part of "name". Left out, they render in Dark's
+           colours in the middle of an otherwise themed comment. -->
+      <Color Name="xml doc comment - attribute name">
+        <Foreground Type="CT_RAW" Source="FF%(class)s"/>
+      </Color>
+      <Color Name="xml doc comment - attribute value">
+        <Foreground Type="CT_RAW" Source="FF%(string)s"/>
+      </Color>
+      <Color Name="xml doc comment - attribute quotes">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <Color Name="xml doc comment - entity reference">
+        <Foreground Type="CT_RAW" Source="FF%(constant)s"/>
+      </Color>
+      <Color Name="xml doc comment - processing instruction">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <!-- The gutter. Visual Studio registers both of these under MEF Items, not
+           under Text Manager Items where a line number intuitively belongs. -->
+      <Color Name="Line Number">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <Color Name="Selected Line Number">
+        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <!-- The inactive side of an #if. Recessive on purpose: it is the one thing
+           on screen that is not compiled. -->
+      <Color Name="Excluded Code">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <!-- Hints are the editor talking, not the code. They sit on the raised
+           surface so they read as an overlay rather than as text. -->
+      <Color Name="inlay hints">
+        <Background Type="CT_RAW" Source="FF%(raised)s"/>
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <Color Name="inline parameter name hints">
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <Color Name="inline hints">
+        <Background Type="CT_RAW" Source="FF%(raised)s"/>
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <!-- Inline diagnostics are the compiler answering back at the end of the
+           line. Errors take the keyword hue, which is each palette's loudest and
+           is otherwise reserved for a mismatched brace; warnings take the enum
+           hue, which is warm in every direction without being the alarm colour;
+           Edit and Continue is informational and recedes to comment. -->
+      <Color Name="inline diagnostics - syntax error">
+        <Foreground Type="CT_RAW" Source="FF%(keyword)s"/>
+      </Color>
+      <Color Name="inline diagnostics - compiler warning">
+        <Foreground Type="CT_RAW" Source="FF%(enum)s"/>
+      </Color>
+      <Color Name="inline diagnostics - Edit and Continue">
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <!-- Roslyn ships `record name` alongside the two specific record kinds. -->
+      <Color Name="record name">
+        <Foreground Type="CT_RAW" Source="FF%(record)s"/>
+      </Color>
       <!-- Brace pairs -->
       <Color Name="brace pair level one">
         <Foreground Type="CT_RAW" Source="FF%(brace1)s"/>
@@ -738,7 +839,7 @@ TEMPLATE = """<Themes>
       <Color Name="mismatched brace">
         <Foreground Type="CT_RAW" Source="FF%(keyword)s"/>
       </Color>
-    </Category>
+%(regex)s    </Category>
 
   </Theme>
 </Themes>
