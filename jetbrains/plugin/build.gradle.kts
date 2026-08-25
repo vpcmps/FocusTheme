@@ -41,6 +41,14 @@ intellijPlatform {
         }
     }
 
+    publishing {
+        // Read from the environment rather than a Gradle property so the token
+        // never lands in gradle.properties, a command line, or the build scan.
+        // Absent locally, which is what should happen: publishing is a CI job
+        // behind a protected environment, not something a checkout can do.
+        token = providers.environmentVariable("JETBRAINS_PUBLISH_TOKEN")
+    }
+
     pluginVerification {
         ides {
             // Pinned rather than recommended(). That helper resolves the newest

@@ -71,13 +71,20 @@ Every syntax hue clears WCAG AA (4.5:1) against its own background; `gen-all.py`
 
 ## Release process
 
-1. Update the `Version` in `FocusThemes/source.extension.vsixmanifest` to a stable `MAJOR.MINOR.PATCH` value.
-2. Merge the version change into `main` and wait for CI.
-3. Create and push the matching tag, for example `v2.0.0`.
-4. The release workflow builds and validates the VSIX package, then creates the GitHub Release.
-5. Approve the `visual-studio-marketplace` environment deployment to publish it to the Marketplace.
+All three extensions release under one version and one tag.
 
-Repository setup required before the first release is documented in [.github/RELEASING.md](.github/RELEASING.md).
+1. Set the version everywhere at once:
+
+   ```powershell
+   pwsh -File scripts/Set-Version.ps1 2.1.0
+   ```
+
+2. Merge the version change into `main` and wait for CI.
+3. Create and push the matching tag, for example `v2.1.0`.
+4. The workflow validates the tag against all three manifests, builds and validates every package, then creates the GitHub Release carrying all of them.
+5. Approve each marketplace environment you want to publish to. They are independent: `visual-studio-marketplace`, `vscode-marketplace`, `open-vsx` (the registry Cursor and VSCodium read), and `jetbrains-marketplace`.
+
+Repository setup required before the first release — one environment and one token per marketplace — is documented in [.github/RELEASING.md](.github/RELEASING.md).
 
 ## Privacy
 
