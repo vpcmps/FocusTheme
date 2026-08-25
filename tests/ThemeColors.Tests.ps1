@@ -230,6 +230,40 @@ Describe 'Focus themes separate the five C# type kinds' {
         # A .vstheme carries colour only, so the interface/class distinction
         # depends on the MEF component as well as on the tint.
         $emphasis = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'FocusThemes\FocusEmphasis.cs')
-        $emphasis -match 'ClassificationTypeNames\s*=\s*"interface name"' | Should Be $true
+        $emphasis -match '\["interface name"\]\s*=\s*Emphasis\.Italic' | Should Be $true
+    }
+
+    It 'never declares a foreground, so the theme keeps ownership of colour' {
+        # The 2.0 bug in one assertion. Emphasis used to be exported as
+        # ClassificationFormatDefinitions, and any format definition of ours for a
+        # classification displaces the colour the theme gave it - which is how class,
+        # record and interface names came to render as plain text. Emphasis is now
+        # applied over the already-resolved properties, so the moment this file starts
+        # naming a foreground again, that ownership has been taken back by mistake.
+        # Comments are stripped first: the remarks in that file name ForegroundColor
+        # while explaining the bug, and prose must not be able to fail this test.
+        $code = (Get-Content -LiteralPath (Join-Path $repoRoot 'FocusThemes\FocusEmphasis.cs') |
+            Where-Object { $_.TrimStart() -notmatch '^//' }) -join "`n"
+
+        $code -match 'ForegroundColor|ForegroundBrush|SetForeground' | Should Be $false
+        $code -match ':\s*ClassificationFormatDefinition' | Should Be $false
+    }
+
+    It 'emphasises exactly the documented set of classifications' {
+        # Keeps the emphasis table and its rationale in step. A name added here without
+        # a reason written down, or dropped without noticing, fails the build rather
+        # than quietly changing how every theme reads.
+        $expected = @(
+            'class name', 'comment', 'extension method name', 'interface name',
+            'keyword', 'keyword - control', 'operator - overloaded', 'parameter name',
+            'record class name', 'type parameter name', 'xml doc comment - delimiter',
+            'xml doc comment - name', 'xml doc comment - text'
+        ) | Sort-Object
+
+        $emphasis = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'FocusThemes\FocusEmphasis.cs')
+        $actual = @([regex]::Matches($emphasis, '\["([^"]+)"\]\s*=\s*Emphasis\.') |
+            ForEach-Object { $_.Groups[1].Value }) | Sort-Object
+
+        ($actual -join ', ') | Should Be ($expected -join ', ')
     }
 }
