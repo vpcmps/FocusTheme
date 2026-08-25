@@ -142,14 +142,14 @@ PALETTES = [
         "guid": "{c75de096-4883-426b-beab-cfb9ef10843c}",
         "desc": "The restrained option. A neutral grey-black ground, one orange-red accent\n"
                 "       for keywords, cooler hues for everything else. All five type kinds still\n"
-                "       separate cleanly - blue class, pale blue italic interface, violet record,\n"
+                "       separate cleanly - blue class, periwinkle italic interface, violet record,\n"
                 "       teal struct, pink enum - but nothing shouts. The safest pick for\n"
                 "       eight-hour days.",
         "bg": "101116", "chrome": "16181F", "panel": "13151B",
         "text": "E6E8EF", "comment": "6B7280", "linenum": "383B45",
         "accent": "FF5C39",
         "keyword": "FF5C39",
-        "class": "35C2FF", "interface": "A5DEFF",
+        "class": "35C2FF", "interface": "6E9BFF",
         "record": "C084FC", "struct": "2DD4BF", "enum": "F472B6",
         "method": "FBBF24", "variable": "B4BAC7", "operator": "FF9E85",
         "string": "4ADE80", "number": "A3E635",
@@ -171,7 +171,7 @@ PALETTES = [
         "text": "D2ECF2", "comment": "4A6B75", "linenum": "1E3A42",
         "accent": "4DE1C1",
         "keyword": "FF6B6B",
-        "class": "4DE1C1", "interface": "A8F5E6",
+        "class": "4DE1C1", "interface": "4DF2A0",
         "record": "C6FF4D", "struct": "B39BFF", "enum": "FF9BD2",
         "method": "59B8FF", "variable": "A3BFC7", "operator": "FFA8A8",
         "string": "FFC24D", "number": "FFE3A8",
@@ -906,9 +906,10 @@ REPORTED = [
 # script's bug. Every hue is now drawn, so a tight pair is the direction's own
 # trade-off and the run only reports it.
 #
-# `interface` is left out on purpose: it is a lighter tint of `class` by design,
-# so it sits a degree or two away in every palette and would drown out the pairs
-# worth looking at. Italic, not hue, is what separates it.
+# `interface` is left out on purpose. The design keeps it in the `class` family
+# deliberately -- a lighter tint of it in some directions, a rotation off it at
+# full chroma in others -- so it lands close by construction and would drown out
+# the pairs worth looking at. Italic, not hue, is what separates it.
 SEPARATED = ("keyword", "class", "record", "struct", "enum", "method",
              "variable", "operator", "string", "number")
 CLOSEST_REPORTED = 3

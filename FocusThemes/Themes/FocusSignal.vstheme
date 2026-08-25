@@ -2,13 +2,13 @@
   <!-- Focus Signal
        The restrained option. A neutral grey-black ground, one orange-red accent
        for keywords, cooler hues for everything else. All five type kinds still
-       separate cleanly - blue class, pale blue italic interface, violet record,
+       separate cleanly - blue class, periwinkle italic interface, violet record,
        teal struct, pink enum - but nothing shouts. The safest pick for
        eight-hour days.
        Surfaces: editor #101116 / chrome #16181F / panel #13151B
                  raised #272930 / border #2A2B30 / selection #3B3C41
        Text:     #E6E8EF primary, #6B7280 comment, #5E616A gutter
-       Types:    class #35C2FF, interface #A5DEFF, record #C084FC,
+       Types:    class #35C2FF, interface #6E9BFF, record #C084FC,
                  struct #2DD4BF, enum #F472B6
        Syntax:   keyword #FF5C39, method #FBBF24, variable #B4BAC7,
                  operator #FF9E85, string #4ADE80, number #A3E635
@@ -247,7 +247,7 @@
         <Foreground Type="CT_RAW" Source="FF2DD4BF"/>
       </Color>
       <Color Name="User Types(Interfaces)">
-        <Foreground Type="CT_RAW" Source="FFA5DEFF"/>
+        <Foreground Type="CT_RAW" Source="FF6E9BFF"/>
       </Color>
       <Color Name="User Types(Delegates)">
         <Foreground Type="CT_RAW" Source="FF35C2FF"/>
@@ -380,7 +380,7 @@
         <Foreground Type="CT_RAW" Source="FF35C2FF"/>
       </Color>
       <Color Name="interface name">
-        <Foreground Type="CT_RAW" Source="FFA5DEFF"/>
+        <Foreground Type="CT_RAW" Source="FF6E9BFF"/>
       </Color>
       <Color Name="type parameter name">
         <Foreground Type="CT_RAW" Source="FF35C2FF"/>
