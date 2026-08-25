@@ -193,7 +193,7 @@ Describe 'Build-Release Marketplace manifest validation' {
   "publisher": "vpcampos",
   "private": false,
   "qna": true,
-  "repo": "https://github.com/vpcmps/FocusThemes",
+  "repo": "https://github.com/vpcmps/FocusTheme",
   "assetFiles": [
     { "pathOnDisk": "screenshots/preview.png", "targetPath": "images/preview.png" }
   ]
@@ -219,7 +219,7 @@ Describe 'Build-Release Marketplace manifest validation' {
   "publisher": "vpcampos",
   "private": true,
   "qna": true,
-  "repo": "https://github.com/vpcmps/FocusThemes",
+  "repo": "https://github.com/vpcmps/FocusTheme",
   "assetFiles": [
     { "pathOnDisk": "screenshots/missing.png", "targetPath": "images/missing.png" }
   ]
