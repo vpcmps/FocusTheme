@@ -10,6 +10,6 @@ obj/
 *.vsix
 artifacts/
 
-# Python (gen-themes.py / derive-light.py are run by hand)
+# Python (gen-themes.py is run by hand)
 __pycache__/
 *.pyc

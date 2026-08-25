@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
 
-    <!-- VSIX settings. Mirrors GraphiteTheme.csproj: the themes are pure colour, and
+    <!-- VSIX settings. The themes are pure colour, and
          the assembly exists only to carry the MEF ClassificationFormatDefinitions that
          add italic/bold, which a .vstheme cannot express. -->
     <VSSDKBuildToolsAutoSetup>true</VSSDKBuildToolsAutoSetup>

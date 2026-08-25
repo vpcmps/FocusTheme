@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$ExpectedVersion,
     [string]$OutputDirectory
@@ -376,7 +376,7 @@ function Assert-ReleaseArtifactSet {
     )
 
     $null = Assert-StableVersion -Version $Version
-    foreach ($fileName in "GraphiteTheme-$Version.vsix", "FocusThemes-$Version.vsix", 'SHA256SUMS.txt') {
+    foreach ($fileName in "FocusThemes-$Version.vsix", 'SHA256SUMS.txt') {
         $path = Join-Path $Directory $fileName
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
             throw "Required release artifact not found: $path"
@@ -401,13 +401,6 @@ function Invoke-BuildRelease {
     $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
 
     $extensions = @(
-        [pscustomobject]@{
-            Name         = 'GraphiteTheme'
-            Project      = 'GraphiteTheme'
-            Identity     = 'GraphiteTheme.4dae551d-1ec1-4c81-949a-350fd81f3ba1'
-            ManifestPath = Join-Path $repoRoot 'GraphiteTheme\source.extension.vsixmanifest'
-            PublishPath  = Join-Path $repoRoot 'marketplace\GraphiteTheme\vs-publish.json'
-        },
         [pscustomobject]@{
             Name         = 'FocusThemes'
             Project      = 'FocusThemes'
@@ -444,10 +437,10 @@ function Invoke-BuildRelease {
 
     Push-Location $repoRoot
     try {
-        & dotnet restore GraphiteTheme.slnx
+        & dotnet restore FocusThemes.slnx
         if ($LASTEXITCODE -ne 0) { throw "dotnet restore failed with exit code $LASTEXITCODE." }
 
-        & dotnet build GraphiteTheme.slnx -c Release --no-restore
+        & dotnet build FocusThemes.slnx -c Release --no-restore
         if ($LASTEXITCODE -ne 0) { throw "dotnet build failed with exit code $LASTEXITCODE." }
     }
     finally {

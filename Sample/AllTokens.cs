@@ -13,7 +13,7 @@ namespace System.Runtime.CompilerServices
 namespace Sample.Tokens
 {
     /// <summary>
-    /// Every token class the Graphite and Focus themes paint, in one file.
+    /// Every token class the Focus themes paint, in one file.
     /// </summary>
     /// <remarks>
     /// Open this with a theme applied and read down: each region below is one
@@ -42,7 +42,7 @@ namespace Sample.Tokens
         /// <summary>A constant name — distinct from a plain field.</summary>
         public const int MaxAccents = 31;
 
-        private const string DefaultLabel = "graphite";
+        private const string DefaultLabel = "focus";
 
         /// <summary>An event name.</summary>
         public event EventHandler<TokenEventArgs> Changed;

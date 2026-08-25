@@ -26,8 +26,8 @@ Describe 'Build-Release version contract' {
 }
 
 Describe 'Marketplace metadata limits' {
-    It 'holds both shipped manifests inside the publisher limits' {
-        foreach ($name in 'GraphiteTheme', 'FocusThemes') {
+    It 'holds the shipped manifest inside the publisher limits' {
+        foreach ($name in 'FocusThemes') {
             $metadata = Get-VsixManifestMetadata -Path (Join-Path $repoRoot "$name\source.extension.vsixmanifest")
             Assert-MarketplaceMetadataLimits -Metadata $metadata -Name $name
             $metadata.Description.Trim().Length -lt 280 | Should Be $true
@@ -60,9 +60,8 @@ Describe 'Marketplace metadata limits' {
 }
 
 Describe 'Repository publisher contract' {
-    It 'uses the public publisher name in both VSIX manifests' {
+    It 'uses the public publisher name in the VSIX manifest' {
         foreach ($manifestPath in @(
-            (Join-Path $repoRoot 'GraphiteTheme\source.extension.vsixmanifest'),
             (Join-Path $repoRoot 'FocusThemes\source.extension.vsixmanifest')
         )) {
             (Get-VsixManifestMetadata -Path $manifestPath).Publisher | Should Be 'Vinícius Campos'
@@ -71,7 +70,6 @@ Describe 'Repository publisher contract' {
 
     It 'retains the immutable Marketplace publisher ID' {
         foreach ($publishManifestPath in @(
-            (Join-Path $repoRoot 'marketplace\GraphiteTheme\vs-publish.json'),
             (Join-Path $repoRoot 'marketplace\FocusThemes\vs-publish.json')
         )) {
             $publishManifest = Get-Content -Raw -LiteralPath $publishManifestPath | ConvertFrom-Json
@@ -87,7 +85,7 @@ Describe 'Build-Release manifest contract' {
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
+    <Identity Id="FocusThemes.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
     <Icon>Assets\icon.png</Icon>
     <PreviewImage>Assets\icon.png</PreviewImage>
     <License>Assets\LICENSE.txt</License>
@@ -99,7 +97,7 @@ Describe 'Build-Release manifest contract' {
     It 'reads identity and required marketplace metadata' {
         $metadata = Get-VsixManifestMetadata -Path $manifestPath
 
-        $metadata.Id | Should Be 'GraphiteTheme.test-id'
+        $metadata.Id | Should Be 'FocusThemes.test-id'
         $metadata.Version | Should Be '1.2.3'
         $metadata.Publisher | Should Be 'Vinícius Campos'
         $metadata.Icon | Should Be 'Assets\icon.png'
@@ -157,7 +155,7 @@ Describe 'Build-Release VSIX inspection' {
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
-    <Identity Id="GraphiteTheme.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
+    <Identity Id="FocusThemes.test-id" Version="1.2.3" Language="en-US" Publisher="Vinícius Campos" />
     <Icon>Assets\icon.png</Icon>
     <PreviewImage>Assets\icon.png</PreviewImage>
     <License>Assets\LICENSE.txt</License>
@@ -189,13 +187,13 @@ Describe 'Build-Release Marketplace manifest validation' {
         @'
 {
   "categories": ["coding"],
-  "identity": { "internalName": "GraphiteTheme" },
+  "identity": { "internalName": "FocusThemes" },
   "overview": "overview.md",
   "priceCategory": "free",
   "publisher": "vpcampos",
   "private": false,
   "qna": true,
-  "repo": "https://github.com/vpcmps/GraphiteTheme",
+  "repo": "https://github.com/vpcmps/FocusThemes",
   "assetFiles": [
     { "pathOnDisk": "screenshots/preview.png", "targetPath": "images/preview.png" }
   ]
@@ -205,7 +203,7 @@ Describe 'Build-Release Marketplace manifest validation' {
         Assert-MarketplaceManifestContract `
             -Path (Join-Path $listingRoot 'vs-publish.json') `
             -ExpectedPublisherId 'vpcampos' `
-            -ExpectedInternalName 'GraphiteTheme'
+            -ExpectedInternalName 'FocusThemes'
     }
 
     It 'rejects a missing listing asset or a private listing' {
@@ -215,13 +213,13 @@ Describe 'Build-Release Marketplace manifest validation' {
         @'
 {
   "categories": ["coding"],
-  "identity": { "internalName": "GraphiteTheme" },
+  "identity": { "internalName": "FocusThemes" },
   "overview": "overview.md",
   "priceCategory": "free",
   "publisher": "vpcampos",
   "private": true,
   "qna": true,
-  "repo": "https://github.com/vpcmps/GraphiteTheme",
+  "repo": "https://github.com/vpcmps/FocusThemes",
   "assetFiles": [
     { "pathOnDisk": "screenshots/missing.png", "targetPath": "images/missing.png" }
   ]
@@ -232,16 +230,15 @@ Describe 'Build-Release Marketplace manifest validation' {
             Assert-MarketplaceManifestContract `
                 -Path (Join-Path $listingRoot 'vs-publish.json') `
                 -ExpectedPublisherId 'vpcampos' `
-                -ExpectedInternalName 'GraphiteTheme'
+                -ExpectedInternalName 'FocusThemes'
         } | Should Be $true
     }
 }
 
 Describe 'Build-Release artifact set validation' {
-    It 'accepts only when both VSIX packages and the checksum file exist' {
+    It 'accepts only when the VSIX package and the checksum file exist' {
         $releaseRoot = Join-Path $TestDrive 'release-complete'
         $null = New-Item -ItemType Directory -Path $releaseRoot
-        'graphite' | Set-Content -LiteralPath (Join-Path $releaseRoot 'GraphiteTheme-1.2.3.vsix')
         'focus' | Set-Content -LiteralPath (Join-Path $releaseRoot 'FocusThemes-1.2.3.vsix')
         'hashes' | Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS.txt')
 
@@ -251,7 +248,6 @@ Describe 'Build-Release artifact set validation' {
     It 'rejects a missing release artifact' {
         $releaseRoot = Join-Path $TestDrive 'release-incomplete'
         $null = New-Item -ItemType Directory -Path $releaseRoot
-        'graphite' | Set-Content -LiteralPath (Join-Path $releaseRoot 'GraphiteTheme-1.2.3.vsix')
         'hashes' | Set-Content -LiteralPath (Join-Path $releaseRoot 'SHA256SUMS.txt')
 
         Test-Throws { Assert-ReleaseArtifactSet -Directory $releaseRoot -Version '1.2.3' } | Should Be $true
