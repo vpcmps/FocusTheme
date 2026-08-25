@@ -13,3 +13,7 @@ artifacts/
 # Python (gen-themes.py is run by hand)
 __pycache__/
 *.pyc
+
+# Gradle output for the JetBrains plugin (*.vsix above already covers VS Code)
+jetbrains/plugin/build/
+jetbrains/plugin/.gradle/

@@ -1,0 +1,68 @@
+{
+  "name": "focus-themes",
+  "displayName": "Focus Themes",
+  "description": "Six high-separation dark themes for fast scanning. Every type kind gets a color of its own.",
+  "version": "1.0.0",
+  "publisher": "vpcampos",
+  "license": "MIT",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Themes"
+  ],
+  "keywords": [
+    "theme",
+    "dark",
+    "color-theme",
+    "adhd",
+    "accessibility"
+  ],
+  "galleryBanner": {
+    "color": "#090B10",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vpcmps/FocusTheme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vpcmps/FocusTheme/issues"
+  },
+  "homepage": "https://github.com/vpcmps/FocusTheme#readme",
+  "contributes": {
+    "themes": [
+      {
+        "label": "Focus Voltage",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusVoltage-color-theme.json"
+      },
+      {
+        "label": "Focus Ultraviolet",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusUltraviolet-color-theme.json"
+      },
+      {
+        "label": "Focus Reactor",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusReactor-color-theme.json"
+      },
+      {
+        "label": "Focus Arcade",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusArcade-color-theme.json"
+      },
+      {
+        "label": "Focus Signal",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusSignal-color-theme.json"
+      },
+      {
+        "label": "Focus Nightdive",
+        "uiTheme": "vs-dark",
+        "path": "./themes/FocusNightdive-color-theme.json"
+      }
+    ]
+  }
+}

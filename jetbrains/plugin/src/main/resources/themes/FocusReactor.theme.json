@@ -1,0 +1,104 @@
+{
+  "name": "Focus Reactor",
+  "dark": true,
+  "author": "Vinicius Campos",
+  "editorScheme": "/themes/FocusReactor.icls",
+  "colors": {
+    "surface": "#06100E",
+    "chrome": "#0A1715",
+    "panel": "#081310",
+    "raised": "#1A2926",
+    "edge": "#0C342B",
+    "ink": "#D8F3EC",
+    "inkMuted": "#49665F",
+    "accent": "#FF7A1A"
+  },
+  "ui": {
+    "*": {
+      "background": "panel",
+      "foreground": "ink",
+      "borderColor": "edge",
+      "separatorColor": "edge",
+      "selectionBackground": "raised",
+      "selectionForeground": "ink",
+      "selectedForeground": "ink",
+      "infoForeground": "inkMuted",
+      "disabledForeground": "inkMuted",
+      "focusColor": "accent",
+      "focusedBorderColor": "accent"
+    },
+    "Editor": {
+      "background": "surface"
+    },
+    "EditorTabs": {
+      "background": "chrome",
+      "underlinedTabBackground": "surface",
+      "underlineColor": "accent",
+      "inactiveUnderlineColor": "inkMuted",
+      "borderColor": "edge"
+    },
+    "DefaultTabs": {
+      "background": "chrome",
+      "underlineColor": "accent",
+      "borderColor": "edge"
+    },
+    "ToolWindow": {
+      "Header": {
+        "background": "chrome",
+        "inactiveBackground": "chrome"
+      },
+      "Button": {
+        "selectedBackground": "raised"
+      }
+    },
+    "StatusBar": {
+      "background": "chrome",
+      "borderColor": "edge"
+    },
+    "MainToolbar": {
+      "background": "chrome"
+    },
+    "TitlePane": {
+      "background": "chrome",
+      "inactiveBackground": "chrome"
+    },
+    "Popup": {
+      "background": "raised",
+      "borderColor": "edge"
+    },
+    "CompletionPopup": {
+      "background": "raised",
+      "selectionBackground": "accent",
+      "matchForeground": "accent"
+    },
+    "Button": {
+      "default": {
+        "startBackground": "accent",
+        "endBackground": "accent",
+        "foreground": "surface",
+        "focusColor": "accent"
+      }
+    },
+    "Link": {
+      "activeForeground": "accent",
+      "hoverForeground": "accent"
+    },
+    "ProgressBar": {
+      "progressColor": "accent",
+      "indeterminateStartColor": "accent"
+    },
+    "Tree": {
+      "background": "panel",
+      "rowHeight": 22
+    },
+    "ScrollBar": {
+      "thumbColor": "edge",
+      "hoverThumbColor": "inkMuted"
+    }
+  },
+  "icons": {
+    "ColorPalette": {
+      "Actions.Blue": "#FF7A1A"
+    }
+  }
+}
