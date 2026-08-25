@@ -552,6 +552,34 @@
       <Color Name="mismatched brace">
         <Foreground Type="CT_RAW" Source="FFFF7A1A"/>
       </Color>
+      <!-- Regex literal internals -->
+      <Color Name="regex - text">
+        <Foreground Type="CT_RAW" Source="FF759B33"/>
+      </Color>
+      <Color Name="regex - grouping">
+        <Foreground Type="CT_RAW" Source="FFC7DBD6"/>
+      </Color>
+      <Color Name="regex - quantifier">
+        <Foreground Type="CT_RAW" Source="FFFF7A1A"/>
+      </Color>
+      <Color Name="regex - alternation">
+        <Foreground Type="CT_RAW" Source="FFFF7A1A"/>
+      </Color>
+      <Color Name="regex - anchor">
+        <Foreground Type="CT_RAW" Source="FFFFE066"/>
+      </Color>
+      <Color Name="regex - character class">
+        <Foreground Type="CT_RAW" Source="FF63D8FF"/>
+      </Color>
+      <Color Name="regex - self escaped character">
+        <Foreground Type="CT_RAW" Source="FFFF6EA9"/>
+      </Color>
+      <Color Name="regex - other escape">
+        <Foreground Type="CT_RAW" Source="FFFF6EA9"/>
+      </Color>
+      <Color Name="regex - comment">
+        <Foreground Type="CT_RAW" Source="FF4E6E68"/>
+      </Color>
     </Category>
 
   </Theme>

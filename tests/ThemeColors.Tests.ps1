@@ -155,15 +155,7 @@ Describe 'Focus themes cover the C# classifications Roslyn ships' {
     # one, a classification Roslyn adds in a future release goes unpainted and
     # nothing says so.
     #
-    # Regex is the documented exception: Roslyn splits a regex literal into nine
-    # parts and none of the six palettes supplies hues for them yet. gen-themes.py
-    # carries the seam; delete this exception when the swatches land.
-    $regexParts = 'text', 'character class', 'quantifier', 'anchor', 'grouping',
-                  'alternation', 'comment', 'other escape', 'self escaped character'
     $knownUnpainted = @{}
-    foreach ($part in $regexParts) {
-        $knownUnpainted["regex - $part"] = 'No palette supplies regex hues yet'
-    }
     # Visual Basic only; the Focus family targets C#.
     foreach ($part in 'attribute name', 'attribute quotes', 'attribute value',
                       'cdata section', 'comment', 'delimiter', 'embedded expression',
