@@ -7,6 +7,8 @@
 // around it. Each *.theme.json here points its editorScheme back at the matching
 // .icls, so the two halves cannot drift.
 
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+
 plugins {
     id("org.jetbrains.intellij.platform") version "2.2.1"
 }
@@ -41,7 +43,19 @@ intellijPlatform {
 
     pluginVerification {
         ides {
-            recommended()
+            // Pinned rather than recommended(). That helper resolves the newest
+            // release of every supported major, so the set it asks for changes
+            // on JetBrains' release schedule rather than on anything in this
+            // repository - and a build started failing on ideaIC:2025.3, a
+            // coordinate none of the configured repositories serve.
+            //
+            // The same platform the plugin is built against is the one worth
+            // verifying against, and it comes from the same property so the two
+            // cannot drift.
+            ide(
+                IntelliJPlatformType.IntellijIdeaCommunity,
+                providers.gradleProperty("platformVersion").get(),
+            )
         }
     }
 }
