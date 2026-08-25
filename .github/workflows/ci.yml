@@ -19,6 +19,19 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      # Every theme file in the repository is generated output. Regenerating and
+      # diffing is the only thing that catches a hand-edited theme, which builds
+      # and installs cleanly and is then silently undone by the next run of the
+      # generators.
+      - name: Verify generated themes are up to date
+        shell: pwsh
+        run: |
+          python scripts/gen-all.py
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Generated themes are stale. Run: python scripts/gen-all.py'
+          }
+
       - name: Run release automation tests
         shell: pwsh
         run: ./scripts/Test.ps1
@@ -34,5 +47,77 @@ jobs:
           path: |
             artifacts/release/FocusThemes-*.vsix
             artifacts/release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  vscode:
+    name: Package VS Code extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Package extension
+        working-directory: vscode
+        run: npx --yes @vscode/vsce package
+
+      - name: Upload extension package
+        uses: actions/upload-artifact@v7
+        with:
+          name: vscode-${{ github.sha }}
+          path: vscode/*.vsix
+          if-no-files-found: error
+          retention-days: 14
+
+  jetbrains:
+    name: Build JetBrains plugin
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # No wrapper is committed: the plugin has no source of its own, so pinning
+      # a Gradle build of Gradle itself buys nothing. Run `gradle wrapper` locally
+      # if you want one.
+      #
+      # The version is quoted because YAML would otherwise read 8.10 as the number
+      # 8.1 and install that instead - which then fails on Java 21 bytecode with an
+      # error that says nothing about versions at all.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10"
+
+      - name: Report toolchain
+        run: gradle --version
+
+      - name: Build plugin
+        working-directory: jetbrains/plugin
+        run: gradle buildPlugin --no-daemon
+
+      - name: Verify plugin
+        working-directory: jetbrains/plugin
+        run: gradle verifyPlugin --no-daemon
+
+      - name: Upload plugin package
+        uses: actions/upload-artifact@v7
+        with:
+          name: jetbrains-${{ github.sha }}
+          path: jetbrains/plugin/build/distributions/*.zip
           if-no-files-found: error
           retention-days: 14

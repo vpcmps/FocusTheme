@@ -1,0 +1,28 @@
+<idea-plugin>
+  <id>com.vpcmps.focus-themes</id>
+  <name>Focus Themes</name>
+  <vendor email="vpcmps@gmail.com" url="https://github.com/vpcmps/FocusTheme">Vinicius Campos</vendor>
+
+  <description><![CDATA[
+    <p>Six high-separation dark themes designed for fast scanning. Each gives
+    every kind of type a colour of its own - class, interface, record, struct and
+    enum are five different hues, not five shades of one - so the shape of a file
+    reads before you read a word of it.</p>
+    <p>The same six palettes ship for Visual Studio, VS Code and Cursor. They are
+    generated from one table, so a theme is the same theme in every editor.</p>
+    <p>Every syntax hue clears WCAG AA against its own background. Comments, the
+    gutter and regex pattern text are held to 3:1 instead - deliberately, so
+    commentary recedes rather than competing with code.</p>
+  ]]></description>
+
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <themeProvider id="com.vpcmps.focus.voltage" path="/themes/FocusVoltage.theme.json"/>
+    <themeProvider id="com.vpcmps.focus.ultraviolet" path="/themes/FocusUltraviolet.theme.json"/>
+    <themeProvider id="com.vpcmps.focus.reactor" path="/themes/FocusReactor.theme.json"/>
+    <themeProvider id="com.vpcmps.focus.arcade" path="/themes/FocusArcade.theme.json"/>
+    <themeProvider id="com.vpcmps.focus.signal" path="/themes/FocusSignal.theme.json"/>
+    <themeProvider id="com.vpcmps.focus.nightdive" path="/themes/FocusNightdive.theme.json"/>
+  </extensions>
+</idea-plugin>

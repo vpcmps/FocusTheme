@@ -1,0 +1,17 @@
+# Every theme file in this repository is generated output, and all three
+# generators write LF. A Windows checkout with core.autocrlf=true would rewrite
+# them to CRLF, so the next `python scripts/gen-all.py` would report all
+# eighteen files as changed when nothing about them had changed at all. That
+# turns the parity check in CI - the one thing proving the generated output is
+# still in step with the palette - into noise nobody reads.
+#
+# Pinning LF on the generated files keeps that check meaningful on every
+# platform. Source files are left to the checkout's own convention.
+
+*.vstheme                                          text eol=lf
+*.icls                                             text eol=lf
+*.theme.json                                       text eol=lf
+vscode/themes/*.json                               text eol=lf
+vscode/package.json                                text eol=lf
+vscode/README.md                                   text eol=lf
+jetbrains/plugin/src/main/resources/META-INF/plugin.xml  text eol=lf
