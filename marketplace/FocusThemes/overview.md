@@ -53,6 +53,6 @@ Focus Themes runs entirely inside Visual Studio. It does not collect telemetry, 
 
 ## Support and source
 
-Source code, release packages, and issue tracking are available on [GitHub](https://github.com/vpcmps/GraphiteTheme).
+Source code, release packages, and issue tracking are available on [GitHub](https://github.com/vpcmps/FocusThemes).
 
-Licensed under the [MIT License](https://github.com/vpcmps/GraphiteTheme/blob/main/LICENSE.txt).
+Licensed under the [MIT License](https://github.com/vpcmps/FocusThemes/blob/main/LICENSE.txt).

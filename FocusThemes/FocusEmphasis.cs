@@ -19,14 +19,15 @@ namespace FocusThemes
     /// are static metadata and cannot be scoped to one theme.
     /// </para>
     /// <para>
-    /// <b>On installing this alongside GraphiteTheme.</b> GraphiteEmphasis exports the
-    /// same set of classification types at the same <see cref="Priority.High"/> order,
-    /// so with both extensions installed two exports compete for each classification and
-    /// MEF does not define which one wins. It does not matter in practice: both set the
-    /// same flags to the same values and neither touches <c>ForegroundColor</c>, so
-    /// either resolution order produces identical rendering. The <c>Focus.*</c> names
-    /// below only need to be distinct from the <c>Graphite.*</c> ones so that the two
-    /// parts do not collide by name.
+    /// <b>On installing this alongside the discontinued Graphite Theme.</b> That
+    /// extension is no longer built from this repository, but it remains published and
+    /// may still be installed. Its GraphiteEmphasis exports the same set of
+    /// classification types at the same <see cref="Priority.High"/> order, so with both
+    /// installed two exports compete for each classification and MEF does not define
+    /// which one wins. It does not matter in practice: both set the same flags to the
+    /// same values and neither touches <c>ForegroundColor</c>, so either resolution
+    /// order produces identical rendering. The <c>Focus.*</c> names below only need to
+    /// stay distinct from the <c>Graphite.*</c> ones so the two parts do not collide.
     /// </para>
     /// <para>
     /// These are defaults. Anything the user has changed in

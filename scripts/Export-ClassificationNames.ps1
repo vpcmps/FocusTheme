@@ -87,6 +87,31 @@ function Get-VisualStudioInstallation {
     }
 }
 
+function Get-RepositoryThemeFile {
+    <#
+    .SYNOPSIS
+        The repository's own .vstheme files.
+    .DESCRIPTION
+        Recursing from the repository root reaches more than the repository:
+        git worktrees under .claude hold full copies of the tree at other
+        commits, so a plain -Recurse scan reads themes that were edited, deleted
+        or never corrected, and reports them as if they were current. Build
+        output under bin and obj is stale for the same reason.
+
+        Skipping dot-directories covers .claude, .vs and .git in one rule, which
+        keeps this correct if another tool adds a copy of the tree later.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$RepositoryRoot)
+
+    $root = [System.IO.Path]::GetFullPath($RepositoryRoot).TrimEnd('\')
+    return Get-ChildItem -Path $RepositoryRoot -Filter *.vstheme -Recurse | Where-Object {
+        $relative = $_.FullName.Substring($root.Length).Trim('\')
+        $parts = $relative.Split('\')
+        -not ($parts | Where-Object { $_.StartsWith('.') -or $_ -in 'bin', 'obj' })
+    }
+}
+
 function Get-ThemeColorNames {
     <#
     .SYNOPSIS
@@ -98,7 +123,7 @@ function Get-ThemeColorNames {
     $categories = @{}
     $guids = @{}
 
-    foreach ($theme in Get-ChildItem -Path $RepositoryRoot -Filter *.vstheme -Recurse) {
+    foreach ($theme in Get-RepositoryThemeFile -RepositoryRoot $RepositoryRoot) {
         [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
         foreach ($category in $xml.SelectNodes("//*[local-name()='Category']")) {
             $name = [string]$category.Name
@@ -190,11 +215,11 @@ function Initialize-ByteSearch {
         that needs it keeps the vectorised IndexOf, which matters when the scan
         reads several gigabytes.
     #>
-    if (-not ('GraphiteTheme.ByteSearch' -as [type])) {
+    if (-not ('FocusThemes.ByteSearch' -as [type])) {
         Add-Type -TypeDefinition @'
 using System;
 
-namespace GraphiteTheme
+namespace FocusThemes
 {
     public static class ByteSearch
     {
@@ -215,7 +240,90 @@ function Test-ByteSequence {
         [Parameter(Mandatory)][byte[]]$Needle
     )
 
-    return [GraphiteTheme.ByteSearch]::Contains($Haystack, $Needle)
+    return [FocusThemes.ByteSearch]::Contains($Haystack, $Needle)
+}
+
+function Get-ColorRoleSlots {
+    <#
+    .SYNOPSIS
+        Which of the two roles each colour in the installation actually has.
+    .DESCRIPTION
+        A colour entry has a Background slot and a Foreground slot, and most
+        colour names carry only one of them. `ToolWindowText` paints text, but
+        its value lives in the Background slot, because the two slots are
+        positions in a record rather than "fill" and "text".
+
+        A theme that states the slot a colour does not have is not rejected. The
+        value is dropped, the theme installs, and the token renders unthemed -
+        which is exactly what happened to five Environment colours. Recording
+        which slots exist is what lets a test catch that without Visual Studio.
+
+        Each category's "Data" value is a binary blob:
+
+            length(4) version(4) count(4) categoryGuid(16) colourCount(4)
+            then per colour: nameLen(4) name bgType(1) [value(4)] fgType(1) [value(4)]
+
+        A type byte of 0x00 means the slot is absent; every other type carries
+        four bytes of value, CT_AUTOMATIC included. Treating "not CT_RAW" as "no
+        bytes" desynchronises the reader and every later name decodes as garbage.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$InstallationPath)
+
+    $key = [regex]::new(
+        '\[\$RootKey\$\\Themes\\\{[^}]+\}\\([^\]]+)\]\s*\r?\n"Data"=hex:([0-9a-fA-F,\\\s]+)')
+    $slots = [ordered]@{}
+
+    foreach ($file in [System.IO.Directory]::EnumerateFiles($InstallationPath, '*.pkgdef', 'AllDirectories')) {
+        try { $text = [System.IO.File]::ReadAllText($file) } catch { continue }
+        if ($text -notlike '*$RootKey$\Themes\*') { continue }
+
+        foreach ($match in $key.Matches($text)) {
+            $category = $match.Groups[1].Value
+            $hex = [regex]::Replace($match.Groups[2].Value, '[^0-9a-fA-F]', '')
+            if ($hex.Length % 2 -ne 0) { continue }
+
+            $bytes = [byte[]]::new($hex.Length / 2)
+            for ($i = 0; $i -lt $bytes.Length; $i++) {
+                $bytes[$i] = [System.Convert]::ToByte($hex.Substring($i * 2, 2), 16)
+            }
+
+            $position = 12 + 16
+            if ($position + 4 -gt $bytes.Length) { continue }
+            $count = [System.BitConverter]::ToInt32($bytes, $position)
+            $position += 4
+
+            for ($n = 0; $n -lt $count; $n++) {
+                if ($position + 4 -gt $bytes.Length) { break }
+                $length = [System.BitConverter]::ToInt32($bytes, $position)
+                $position += 4
+                if ($length -lt 0 -or $position + $length -gt $bytes.Length) { break }
+                $name = [System.Text.Encoding]::ASCII.GetString($bytes, $position, $length)
+                $position += $length
+
+                $present = @()
+                foreach ($role in 'Background', 'Foreground') {
+                    if ($position -ge $bytes.Length) { break }
+                    $type = $bytes[$position]
+                    $position++
+                    if ($type -ne 0x00) {
+                        $present += $role
+                        $position += 4
+                    }
+                }
+
+                $entry = "$category|$name"
+                if ($slots.Contains($entry)) {
+                    $slots[$entry] = @($slots[$entry] + $present | Sort-Object -Unique)
+                }
+                else {
+                    $slots[$entry] = @($present)
+                }
+            }
+        }
+    }
+
+    return $slots
 }
 
 function Invoke-ExportClassificationNames {
@@ -265,6 +373,10 @@ function Invoke-ExportClassificationNames {
     $recognizedGuids = @($guidCandidates | Where-Object { $result.Found.Contains("guid:$_") } | Sort-Object)
     $missingGuids = @($guidCandidates | Where-Object { -not $result.Found.Contains("guid:$_") } | Sort-Object)
 
+    Write-Host 'Reading colour role slots from the installation.'
+    $roleSlots = Get-ColorRoleSlots -InstallationPath $installation.Path
+    Write-Host "Recorded slots for $($roleSlots.Count) colour(s)."
+
     $fixture = [ordered]@{
         '$comment'       = 'Generated by scripts/Export-ClassificationNames.ps1. Do not edit by hand; re-run the script when Visual Studio updates and review the diff.'
         visualStudio     = [ordered]@{
@@ -276,6 +388,7 @@ function Invoke-ExportClassificationNames {
         unrecognizedNames = $missingNames
         recognizedCategoryGuids = $recognizedGuids
         unrecognizedCategoryGuids = $missingGuids
+        colorRoleSlots   = $roleSlots
     }
 
     $directory = Split-Path -Parent $OutputPath

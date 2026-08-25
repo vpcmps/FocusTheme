@@ -2,15 +2,14 @@
 
 The Focus family is six dark themes that share a structure and differ only in
 colour, so the structure lives here once and the palettes live in PALETTES.
-This mirrors the role derive-light.py plays in GraphiteTheme: not shipped in the
-VSIX, run by hand when a palette changes, output committed.
+Not shipped in the VSIX: run by hand when a palette changes, output committed.
 
 Palettes come from the "Visual Studio ADHD color scheme" design explorations.
-Every direction there supplies twelve named swatches plus a full editor mockup,
-so every syntax hue and the three surface depths (editor / chrome / panel) are
-read straight from the design. Nothing here invents a colour: the few values not
-drawn - raised surface, border, selection, line-number grey, tag and brace pairs
-- are each a stated function of one that was.
+Every direction there supplies twelve named swatches, a regex sub-family and a
+full editor mockup, so every syntax hue and the three surface depths (editor /
+chrome / panel) are read straight from the design. Nothing here invents a colour:
+the few values not drawn - raised surface, border, selection, line-number grey,
+tag and brace pairs - are each a stated function of one that was.
 
 Usage:  python gen-themes.py [outdir]
 """
@@ -31,7 +30,9 @@ FALLBACK = "{1ded0138-47ce-435e-84ef-9ec1f439b749}"
 #   text/comment      plain text and the COMMENT swatch
 #   linenum           the mockup's line-number grey, lifted to 3:1 below
 #   accent            the hue the mockup's status bar and active-tab underline use
-#   keyword..operator the twelve named swatches, on the Graphite role taxonomy
+#   keyword..operator the twelve named swatches, on the shared role taxonomy
+#   regex_text        the pattern text, drawn a shade below the string hue
+#   regex_group       the grouping metacharacters, drawn as a light neutral
 #   border            tint + alpha of the card's own 1px border, flattened onto bg
 #
 # The design separates all five C# type kinds. `class` carries each direction's
@@ -75,6 +76,7 @@ PALETTES = [
         "record": "B6FF3D", "struct": "FFD24D", "enum": "FF7A1A",
         "method": "9B8CFF", "variable": "AEBED6", "operator": "FF9EC4",
         "string": "4ADE80", "number": "FFF275",
+        "regex_text": "2F8551", "regex_group": "CAD5E4",
         "border": ("3BE8FF", 0.14),
     },
     {
@@ -92,6 +94,7 @@ PALETTES = [
         "record": "6BE1FF", "struct": "5CFFB1", "enum": "FF9060",
         "method": "FFD166", "variable": "B7ABD4", "operator": "E0BFFF",
         "string": "A3FF6B", "number": "FFF3A3",
+        "regex_text": "639746", "regex_group": "D0C8E3",
         "border": ("C77DFF", 0.18),
     },
     {
@@ -111,6 +114,7 @@ PALETTES = [
         "record": "A78BFA", "struct": "FF6EA9", "enum": "63D8FF",
         "method": "FFE066", "variable": "A9C7C0", "operator": "FFB27A",
         "string": "C6FF4D", "number": "E8FF9E",
+        "regex_text": "759B33", "regex_group": "C7DBD6",
         "border": ("2EF2C2", 0.16),
     },
     {
@@ -129,6 +133,7 @@ PALETTES = [
         "record": "FF9F1C", "struct": "3DFFC9", "enum": "C084FC",
         "method": "4DA8FF", "variable": "C0B4D1", "operator": "FF9CC0",
         "string": "9FFF6B", "number": "D9FFB3",
+        "regex_text": "629846", "regex_group": "D6CEE1",
         "border": ("FF3D7F", 0.18),
     },
     {
@@ -148,6 +153,7 @@ PALETTES = [
         "record": "C084FC", "struct": "2DD4BF", "enum": "F472B6",
         "method": "FBBF24", "variable": "B4BAC7", "operator": "FF9E85",
         "string": "4ADE80", "number": "A3E635",
+        "regex_text": "328853", "regex_group": "CED2DB",
         "border": ("E6E8EF", 0.12),
     },
     {
@@ -169,6 +175,7 @@ PALETTES = [
         "record": "C6FF4D", "struct": "B39BFF", "enum": "FF9BD2",
         "method": "59B8FF", "variable": "A3BFC7", "operator": "FFA8A8",
         "string": "FFC24D", "number": "FFE3A8",
+        "regex_text": "967735", "regex_group": "C3D5DB",
         "border": ("4DE1C1", 0.16),
     },
 ]
@@ -250,14 +257,55 @@ def derive(p):
     # keyword hue is reserved: a mismatched brace uses it, and that warning only
     # reads as a warning if nothing else on the line is already wearing it.
     d["brace1"], d["brace2"], d["brace3"] = p["class"], p["method"], p["string"]
+    d["regex"] = regex_block(p)
     return d
+
+
+# Roslyn splits the inside of a regex literal into nine classifications. The
+# design draws the sub-family directly - "the pattern text sits a shade below the
+# string hue so the metacharacters are the part that pops" - and every mockup
+# renders the same two sample patterns, so the nine are read from the design
+# rather than chosen here.
+#
+# Four of them turn out to be roles this palette already has. That is the
+# design's own doing, not a shortcut: a quantifier is syntax like a keyword, an
+# anchor is positional like a method call, a character class names a set the way
+# an enum names one, and an escape is a literal wearing a metacharacter's clothes
+# the way a struct is a value wearing a type's. Only two values are outside the
+# existing roles, and those are the two each palette states as swatches:
+# regex_text and regex_group.
+#
+# `regex - comment` - the `(?#...)` form - is not in the mockups, because nobody
+# writes them. It takes the direction's comment hue, which is what it is.
+REGEX_ROLES = (
+    ("text", "regex_text"),                     # the literal characters matched
+    ("grouping", "regex_group"),                # ( ) (?<name> )
+    ("quantifier", "keyword"),                  # * + ? {4,6}
+    ("alternation", "keyword"),                 # |
+    ("anchor", "method"),                       # ^ $ \b
+    ("character class", "enum"),                # \d \w [A-Z]
+    ("self escaped character", "struct"),       # \. \+ - a metacharacter made literal
+    ("other escape", "struct"),                 # \n \t é
+    ("comment", "comment"),                     # (?#...)
+)
+
+
+def regex_block(p):
+    """The nine `regex - *` entries for one palette."""
+    missing = [key for _part, key in REGEX_ROLES if key not in p]
+    if missing:
+        raise SystemExit("%s: palette is missing %s" % (p["name"], ", ".join(missing)))
+    return "      <!-- Regex literal internals -->\n" + "".join(
+        '      <Color Name="regex - %s">\n'
+        '        <Foreground Type="CT_RAW" Source="FF%s"/>\n'
+        '      </Color>\n' % (part, p[key]) for part, key in REGEX_ROLES)
 
 
 # ---------------------------------------------------------------------------
 # Theme template
 # ---------------------------------------------------------------------------
-# Category GUIDs and colour names are Visual Studio's own and are identical to
-# GraphiteDark.vstheme; only the Source values differ between themes.
+# Category GUIDs and colour names are Visual Studio's own; only the Source values
+# differ between themes.
 
 TEMPLATE = """<Themes>
   <!-- %(name)s
@@ -352,7 +400,6 @@ TEMPLATE = """<Themes>
       </Color>
       <Color Name="ToolWindowBackground">
         <Background Type="CT_RAW" Source="FF%(panel)s"/>
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
       <Color Name="BrandedUIBackground">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
@@ -360,17 +407,33 @@ TEMPLATE = """<Themes>
       <Color Name="ScrollBarBackground">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
       </Color>
+      <!-- Text in this category lives in the Background slot. Background and
+           Foreground are the two slots of a colour entry, not "fill" and "text":
+           a colour named ...Text or ...Glyph is single-slot, and Visual Studio
+           has nowhere to put a Foreground stated on one. It drops it silently -
+           no error, no log - so the theme installs and simply does not paint.
+           These three are what the Test Explorer and every other tool window
+           bind to; without them the whole text layer falls back to Dark. -->
+      <Color Name="ToolWindowText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <Color Name="WindowText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <Color Name="GridHeadingText">
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
       <Color Name="CommandBarTextActive">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
       <Color Name="CommandBarTextHover">
-        <Foreground Type="CT_RAW" Source="FFFFFFFF"/>
+        <Background Type="CT_RAW" Source="FFFFFFFF"/>
       </Color>
       <Color Name="CommandBarTextInactive">
-        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+        <Background Type="CT_RAW" Source="FF%(muted)s"/>
       </Color>
       <Color Name="CommandBarMenuGlyph">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+        <Background Type="CT_RAW" Source="FF%(text)s"/>
       </Color>
     </Category>
 
@@ -434,18 +497,12 @@ TEMPLATE = """<Themes>
         <Background Type="CT_RAW" Source="FF%(isel)s"/>
         <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
-      <Color Name="Line Number">
-        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
-      </Color>
-      <Color Name="Selected Line Number">
-        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
-      </Color>
       <Color Name="Visible Whitespace">
         <Foreground Type="CT_RAW" Source="FF%(border)s"/>
       </Color>
+      <!-- Indicator Margin is background-only; a Foreground here has no slot. -->
       <Color Name="Indicator Margin">
         <Background Type="CT_RAW" Source="FF%(bg)s"/>
-        <Foreground Type="CT_AUTOMATIC" Source="00000000"/>
       </Color>
     </Category>
 
@@ -652,8 +709,8 @@ TEMPLATE = """<Themes>
       <Color Name="extension method name">
         <Foreground Type="CT_RAW" Source="FF%(method)s"/>
       </Color>
-      <!-- Variables: their own hue, as in Graphite. The design mockups leave
-           identifiers at plain text, but that collapses locals, fields and
+      <!-- Variables: their own hue. The design mockups leave identifiers at
+           plain text, but that collapses locals, fields and
            properties into the same read as punctuation and operators; giving
            them a hue is what makes "what is this name" answerable at a glance. -->
       <Color Name="local name">
@@ -725,6 +782,68 @@ TEMPLATE = """<Themes>
       <Color Name="xml doc comment - cdata section">
         <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
       </Color>
+      <!-- An attribute inside a doc tag - <typeparam name="T"> - is three more
+           classifications, not part of "name". Left out, they render in Dark's
+           colours in the middle of an otherwise themed comment. -->
+      <Color Name="xml doc comment - attribute name">
+        <Foreground Type="CT_RAW" Source="FF%(class)s"/>
+      </Color>
+      <Color Name="xml doc comment - attribute value">
+        <Foreground Type="CT_RAW" Source="FF%(string)s"/>
+      </Color>
+      <Color Name="xml doc comment - attribute quotes">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <Color Name="xml doc comment - entity reference">
+        <Foreground Type="CT_RAW" Source="FF%(constant)s"/>
+      </Color>
+      <Color Name="xml doc comment - processing instruction">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <!-- The gutter. Visual Studio registers both of these under MEF Items, not
+           under Text Manager Items where a line number intuitively belongs. -->
+      <Color Name="Line Number">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <Color Name="Selected Line Number">
+        <Foreground Type="CT_RAW" Source="FF%(text)s"/>
+      </Color>
+      <!-- The inactive side of an #if. Recessive on purpose: it is the one thing
+           on screen that is not compiled. -->
+      <Color Name="Excluded Code">
+        <Foreground Type="CT_RAW" Source="FF%(muted)s"/>
+      </Color>
+      <!-- Hints are the editor talking, not the code. They sit on the raised
+           surface so they read as an overlay rather than as text. -->
+      <Color Name="inlay hints">
+        <Background Type="CT_RAW" Source="FF%(raised)s"/>
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <Color Name="inline parameter name hints">
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <Color Name="inline hints">
+        <Background Type="CT_RAW" Source="FF%(raised)s"/>
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <!-- Inline diagnostics are the compiler answering back at the end of the
+           line. Errors take the keyword hue, which is each palette's loudest and
+           is otherwise reserved for a mismatched brace; warnings take the enum
+           hue, which is warm in every direction without being the alarm colour;
+           Edit and Continue is informational and recedes to comment. -->
+      <Color Name="inline diagnostics - syntax error">
+        <Foreground Type="CT_RAW" Source="FF%(keyword)s"/>
+      </Color>
+      <Color Name="inline diagnostics - compiler warning">
+        <Foreground Type="CT_RAW" Source="FF%(enum)s"/>
+      </Color>
+      <Color Name="inline diagnostics - Edit and Continue">
+        <Foreground Type="CT_RAW" Source="FF%(comment)s"/>
+      </Color>
+      <!-- Roslyn ships `record name` alongside the two specific record kinds. -->
+      <Color Name="record name">
+        <Foreground Type="CT_RAW" Source="FF%(record)s"/>
+      </Color>
       <!-- Brace pairs -->
       <Color Name="brace pair level one">
         <Foreground Type="CT_RAW" Source="FF%(brace1)s"/>
@@ -738,7 +857,7 @@ TEMPLATE = """<Themes>
       <Color Name="mismatched brace">
         <Foreground Type="CT_RAW" Source="FF%(keyword)s"/>
       </Color>
-    </Category>
+%(regex)s    </Category>
 
   </Theme>
 </Themes>
@@ -771,8 +890,14 @@ REPORTED = [
     ("operator", "operator", AA),
     ("string", "string", AA),
     ("number", "number", AA),
+    ("regex_group", "regex group", AA),
     ("comment", "comment", RECESSIVE),
     ("muted", "gutter", RECESSIVE),
+    # Recessive for the same reason as comment, and stated by the design rather
+    # than chosen here: the pattern text sits a shade below the string hue so the
+    # metacharacters are what pops. Lifting it to AA would flatten the sub-family
+    # back into one green and lose the distinction the design is making.
+    ("regex_text", "regex text", RECESSIVE),
 ]
 
 # The design's first rule is that no two token classes read alike, so the syntax

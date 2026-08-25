@@ -14,6 +14,19 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 
 $fixturePath = Join-Path $PSScriptRoot 'fixtures\vs-classifications.json'
 
+function Get-RepositoryThemeFile {
+    # Recursing from the repository root reaches more than the repository: git
+    # worktrees under .claude hold full copies of the tree at other commits, so a
+    # plain -Recurse scan reads themes that were edited, deleted or never
+    # corrected and reports them as current. Skipping dot-directories covers
+    # .claude, .vs and .git in one rule; bin and obj are stale for the same reason.
+    $root = [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\')
+    Get-ChildItem -Path $repoRoot -Filter *.vstheme -Recurse | Where-Object {
+        $parts = $_.FullName.Substring($root.Length).Trim('\').Split('\')
+        -not ($parts | Where-Object { $_.StartsWith('.') -or $_ -in 'bin', 'obj' })
+    }
+}
+
 # Names and GUIDs that are absent from Visual Studio 2026 and are expected to be.
 # Each needs a reason: an unexplained entry here is indistinguishable from a bug
 # somebody silenced.
@@ -52,7 +65,7 @@ Describe 'Theme colour names are recognised by Visual Studio' {
             [string[]]$fixture.recognizedNames, [System.StringComparer]::Ordinal)
 
         $unexpected = @()
-        foreach ($theme in Get-ChildItem -Path $repoRoot -Filter *.vstheme -Recurse) {
+        foreach ($theme in Get-RepositoryThemeFile) {
             [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
             foreach ($colour in $xml.SelectNodes("//*[local-name()='Color']")) {
                 $name = [string]$colour.Name
@@ -72,7 +85,7 @@ Describe 'Theme colour names are recognised by Visual Studio' {
             [string[]]$fixture.recognizedCategoryGuids, [System.StringComparer]::OrdinalIgnoreCase)
 
         $unexpected = @()
-        foreach ($theme in Get-ChildItem -Path $repoRoot -Filter *.vstheme -Recurse) {
+        foreach ($theme in Get-RepositoryThemeFile) {
             [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
             foreach ($category in $xml.SelectNodes("//*[local-name()='Category']")) {
                 $guid = ([string]$category.GUID).Trim('{', '}')
@@ -94,6 +107,100 @@ Describe 'Theme colour names are recognised by Visual Studio' {
 
         $stale = @($knownAbsent.Keys | Where-Object { $recognized.Contains($_) })
         ($stale -join '; ') | Should Be ''
+    }
+
+    It 'states only roles the colour actually has a slot for' {
+        # The failure this closes: a colour entry has a Background slot and a
+        # Foreground slot, and most colour names carry only one. `ToolWindowText`
+        # paints text, but its value lives in the Background slot - the two slots
+        # are positions in a record, not "fill" and "text". State the slot a
+        # colour does not have and Visual Studio drops the value silently, so the
+        # theme installs and simply does not paint that token.
+        #
+        # Five Environment colours shipped that way. Checking the name alone
+        # could not see it: every one of those names was valid.
+        $fixture = Get-Content -Raw -LiteralPath $fixturePath | ConvertFrom-Json
+        $slots = $fixture.colorRoleSlots
+        $slots | Should Not BeNullOrEmpty
+
+        $unexpected = @()
+        foreach ($theme in Get-RepositoryThemeFile) {
+            [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
+            foreach ($category in $xml.SelectNodes("//*[local-name()='Category']")) {
+                foreach ($colour in $category.SelectNodes("*[local-name()='Color']")) {
+                    $entry = "$([string]$category.Name)|$([string]$colour.Name)"
+                    $known = $slots.PSObject.Properties[$entry]
+                    # Only names Visual Studio registers under this category can be
+                    # checked. A name it does not register there is a separate
+                    # question, and the coverage test above owns it.
+                    if ($null -eq $known) { continue }
+
+                    $available = @([string[]]$known.Value)
+                    foreach ($role in 'Background', 'Foreground') {
+                        if ($null -eq $colour.SelectSingleNode("*[local-name()='$role']")) { continue }
+                        if ($available -contains $role) { continue }
+                        $unexpected += "$($theme.Name): $entry has no $role slot"
+                    }
+                }
+            }
+        }
+
+        ($unexpected -join '; ') | Should Be ''
+    }
+}
+
+Describe 'Focus themes cover the C# classifications Roslyn ships' {
+    # Visual Studio ignores what a theme does not mention just as quietly as it
+    # ignores what a theme misspells, so absence needs a test of its own. Without
+    # one, a classification Roslyn adds in a future release goes unpainted and
+    # nothing says so.
+    #
+    $knownUnpainted = @{}
+    # Visual Basic only; the Focus family targets C#.
+    foreach ($part in 'attribute name', 'attribute quotes', 'attribute value',
+                      'cdata section', 'comment', 'delimiter', 'embedded expression',
+                      'entity reference', 'name', 'processing instruction', 'text') {
+        $knownUnpainted["xml literal - $part"] = 'Visual Basic only'
+    }
+    $knownUnpainted['roslyn test code'] = 'Internal to Roslyn test infrastructure'
+    $knownUnpainted['roslyn test code markdown'] = 'Internal to Roslyn test infrastructure'
+
+    It 'paints every classification except the documented exceptions' {
+        $fixture = Get-Content -Raw -LiteralPath $fixturePath | ConvertFrom-Json
+        $roslyn = @($fixture.colorRoleSlots.PSObject.Properties.Name |
+            Where-Object { $_ -like 'Roslyn Text Editor MEF Items|*' } |
+            ForEach-Object { $_.Split('|', 2)[1] })
+        $roslyn.Count -gt 0 | Should Be $true
+
+        $missing = @()
+        foreach ($theme in Get-ChildItem -Path (Join-Path $repoRoot 'FocusThemes\Themes') -Filter *.vstheme) {
+            [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
+            $painted = [System.Collections.Generic.HashSet[string]]::new(
+                [string[]]@($xml.SelectNodes("//*[local-name()='Color']") | ForEach-Object { [string]$_.Name }),
+                [System.StringComparer]::Ordinal)
+
+            foreach ($name in $roslyn) {
+                if ($painted.Contains($name)) { continue }
+                if ($knownUnpainted.ContainsKey($name)) { continue }
+                $missing += "$($theme.BaseName): $name"
+            }
+        }
+
+        ($missing -join '; ') | Should Be ''
+    }
+
+    It 'keeps every unpainted exception genuinely unpainted' {
+        # An exception left behind after the gap is filled hides the next gap.
+        $stillListed = @()
+        foreach ($theme in Get-ChildItem -Path (Join-Path $repoRoot 'FocusThemes\Themes') -Filter *.vstheme) {
+            [xml]$xml = Get-Content -Raw -LiteralPath $theme.FullName
+            foreach ($colour in $xml.SelectNodes("//*[local-name()='Color']")) {
+                $name = [string]$colour.Name
+                if ($knownUnpainted.ContainsKey($name)) { $stillListed += "$($theme.BaseName): $name" }
+            }
+        }
+
+        ($stillListed -join '; ') | Should Be ''
     }
 }
 

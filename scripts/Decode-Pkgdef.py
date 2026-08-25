@@ -13,8 +13,8 @@ Each category's "Data" value is a binary blob:
 The type byte says whether a value follows, and colour values are stored R,G,B,A
 - not the A,R,G,B order the .vstheme spells them in.
 
-Usage:  python decode-pkgdef.py <file.pkgdef> [more.pkgdef ...]
-        python decode-pkgdef.py --check <file.pkgdef>   compare against its .vstheme
+Usage:  python Decode-Pkgdef.py <file.pkgdef> [more.pkgdef ...]
+        python Decode-Pkgdef.py --check <file.pkgdef>   compare against its .vstheme
 """
 import binascii
 import glob
@@ -158,7 +158,7 @@ def main(argv):
         for pkgdef_path in argv[1:]:
             name = os.path.basename(pkgdef_path).replace(".pkgdef", "")
             matches = glob.glob(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                              "**", name + ".vstheme"),
                 recursive=True,
             )

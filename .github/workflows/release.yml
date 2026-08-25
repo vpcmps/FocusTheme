@@ -56,7 +56,6 @@ jobs:
         with:
           name: release-${{ steps.release.outputs.version }}
           path: |
-            artifacts/release/GraphiteTheme-${{ steps.release.outputs.version }}.vsix
             artifacts/release/FocusThemes-${{ steps.release.outputs.version }}.vsix
             artifacts/release/SHA256SUMS.txt
           if-no-files-found: error
@@ -86,7 +85,6 @@ jobs:
           RELEASE_VERSION: ${{ needs.build.outputs.version }}
         run: |
           $assets = @(
-            (Resolve-Path "artifacts/release/GraphiteTheme-$env:RELEASE_VERSION.vsix").Path,
             (Resolve-Path "artifacts/release/FocusThemes-$env:RELEASE_VERSION.vsix").Path,
             (Resolve-Path 'artifacts/release/SHA256SUMS.txt').Path
           )
@@ -96,7 +94,7 @@ jobs:
             gh release upload $env:RELEASE_TAG @assets --clobber
           }
           else {
-            gh release create $env:RELEASE_TAG @assets --verify-tag --generate-notes --title "Graphite and Focus Themes $env:RELEASE_VERSION"
+            gh release create $env:RELEASE_TAG @assets --verify-tag --generate-notes --title "Focus Themes $env:RELEASE_VERSION"
           }
 
           if ($LASTEXITCODE -ne 0) {
@@ -127,7 +125,7 @@ jobs:
 
       - name: Restore VSIX publishing tools
         shell: pwsh
-        run: dotnet restore GraphiteTheme.slnx
+        run: dotnet restore FocusThemes.slnx
 
       - name: Publish both extensions
         shell: pwsh
@@ -152,10 +150,6 @@ jobs:
           }
 
           $publications = @(
-            @{
-              Payload = "artifacts/release/GraphiteTheme-$env:RELEASE_VERSION.vsix"
-              Manifest = 'marketplace/GraphiteTheme/vs-publish.json'
-            },
             @{
               Payload = "artifacts/release/FocusThemes-$env:RELEASE_VERSION.vsix"
               Manifest = 'marketplace/FocusThemes/vs-publish.json'

@@ -1,7 +1,4 @@
 <Solution>
-  <Project Path="GraphiteTheme/GraphiteTheme.csproj">
-    <Deploy />
-  </Project>
   <Project Path="FocusThemes/FocusThemes.csproj">
     <Deploy />
   </Project>
