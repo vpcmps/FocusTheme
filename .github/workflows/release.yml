@@ -12,6 +12,15 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+# One tag releases all three extensions at the same version. Every publishing job
+# sits behind its own protected environment and consumes only its own secret, so
+# approving a release to one marketplace never authorises the others - and a
+# marketplace that rejects a submission does not hold up the two that accepted.
+#
+# Every job publishes the artifact built by its packaging job rather than
+# rebuilding. What reaches a marketplace is then the same bytes the GitHub
+# Release carries, which is the only way the checksums mean anything.
+
 jobs:
   build:
     name: Build and validate release
@@ -43,6 +52,13 @@ jobs:
             -MainRef origin/main `
             -RepositoryRoot $env:GITHUB_WORKSPACE
 
+      # All three manifests have to agree with the tag before anything is built.
+      # Catching it here costs seconds; catching it after two packaging jobs have
+      # run means a half-published release at two different version numbers.
+      - name: Validate all three manifest versions
+        shell: pwsh
+        run: ./scripts/Set-Version.ps1 '${{ steps.release.outputs.version }}' -Check
+
       - name: Run release automation tests
         shell: pwsh
         run: ./scripts/Test.ps1
@@ -61,10 +77,79 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  package-vscode:
+    name: Package VS Code extension
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Package extension
+        working-directory: vscode
+        run: npx --yes @vscode/vsce package --out "focus-themes-${{ needs.build.outputs.version }}.vsix"
+
+      - name: Upload extension package
+        uses: actions/upload-artifact@v7
+        with:
+          name: vscode-${{ needs.build.outputs.version }}
+          path: vscode/*.vsix
+          if-no-files-found: error
+          retention-days: 14
+
+  package-jetbrains:
+    name: Package JetBrains plugin
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # Quoted for the same reason as everywhere else: unquoted, YAML reads 8.10
+      # as the number 8.1 and installs that.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10"
+
+      - name: Build plugin
+        working-directory: jetbrains/plugin
+        run: gradle buildPlugin --no-daemon
+
+      - name: Verify plugin
+        working-directory: jetbrains/plugin
+        run: gradle verifyPlugin --no-daemon
+
+      - name: Upload plugin package
+        uses: actions/upload-artifact@v7
+        with:
+          name: jetbrains-${{ needs.build.outputs.version }}
+          path: jetbrains/plugin/build/distributions/*.zip
+          if-no-files-found: error
+          retention-days: 14
+
   github-release:
     name: Publish GitHub Release
-    needs: build
-    runs-on: windows-latest
+    needs:
+      - build
+      - package-vscode
+      - package-jetbrains
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
@@ -73,33 +158,39 @@ jobs:
       - name: Download validated artifacts
         uses: actions/download-artifact@v8
         with:
-          name: release-${{ needs.build.outputs.version }}
-          path: artifacts/release
+          pattern: "*-${{ needs.build.outputs.version }}"
+          path: artifacts
+          merge-multiple: true
 
+      # The GitHub Release carries all three packages, so someone who does not
+      # want to go through a marketplace - or whose IDE is not served by one -
+      # has a first-class way to install every editor's build.
       - name: Create or update GitHub Release
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
           RELEASE_VERSION: ${{ needs.build.outputs.version }}
         run: |
-          $assets = @(
-            (Resolve-Path "artifacts/release/FocusThemes-$env:RELEASE_VERSION.vsix").Path,
-            (Resolve-Path 'artifacts/release/SHA256SUMS.txt').Path
+          set -euo pipefail
+          assets=(
+            "artifacts/FocusThemes-${RELEASE_VERSION}.vsix"
+            "artifacts/focus-themes-${RELEASE_VERSION}.vsix"
+            "artifacts/SHA256SUMS.txt"
           )
+          # The JetBrains archive is named by Gradle, not by us.
+          assets+=("$(ls artifacts/*.zip)")
 
-          gh release view $env:RELEASE_TAG *> $null
-          if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:RELEASE_TAG @assets --clobber
-          }
-          else {
-            gh release create $env:RELEASE_TAG @assets --verify-tag --generate-notes --title "Focus Themes $env:RELEASE_VERSION"
-          }
+          for asset in "${assets[@]}"; do
+            test -f "$asset" || { echo "Missing release asset: $asset" >&2; exit 1; }
+          done
 
-          if ($LASTEXITCODE -ne 0) {
-            throw "GitHub Release publication failed with exit code $LASTEXITCODE."
-          }
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+          else
+            gh release create "$RELEASE_TAG" "${assets[@]}" \
+              --verify-tag --generate-notes --title "Focus Themes ${RELEASE_VERSION}"
+          fi
 
   marketplace:
     name: Publish Visual Studio Marketplace
@@ -166,3 +257,121 @@ jobs:
               throw "Marketplace publication failed for '$($publication.Payload)' with exit code $LASTEXITCODE."
             }
           }
+
+  vscode-marketplace:
+    name: Publish VS Code Marketplace
+    needs:
+      - build
+      - package-vscode
+      - github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: vscode-marketplace
+
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Download packaged extension
+        uses: actions/download-artifact@v8
+        with:
+          name: vscode-${{ needs.build.outputs.version }}
+          path: artifacts
+
+      - name: Publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VSCE_PAT:-}" ]; then
+            echo 'The VSCE_PAT environment secret is not configured.' >&2
+            exit 1
+          fi
+          npx --yes @vscode/vsce publish \
+            --packagePath "artifacts/focus-themes-${RELEASE_VERSION}.vsix"
+
+  open-vsx:
+    name: Publish Open VSX
+    needs:
+      - build
+      - package-vscode
+      - github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Open VSX is the registry Cursor, VSCodium and Gitpod read. Publishing only
+    # to Microsoft's Marketplace leaves those users with no way to find the theme
+    # in their extensions panel, because none of them can query it.
+    environment:
+      name: open-vsx
+
+    steps:
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Download packaged extension
+        uses: actions/download-artifact@v8
+        with:
+          name: vscode-${{ needs.build.outputs.version }}
+          path: artifacts
+
+      - name: Publish
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${OVSX_PAT:-}" ]; then
+            echo 'The OVSX_PAT environment secret is not configured.' >&2
+            exit 1
+          fi
+          npx --yes ovsx publish \
+            "artifacts/focus-themes-${RELEASE_VERSION}.vsix" \
+            --pat "$OVSX_PAT"
+
+  jetbrains-marketplace:
+    name: Publish JetBrains Marketplace
+    needs:
+      - build
+      - package-jetbrains
+      - github-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: jetbrains-marketplace
+
+    steps:
+      - name: Check out tagged commit
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10"
+
+      # publishPlugin builds its own archive rather than taking a path, so this
+      # is the one publication that does not reuse the packaged artifact. The
+      # inputs are identical - same tag, same generated resources, same version -
+      # so the result is the same plugin; it is simply built twice.
+      - name: Publish
+        working-directory: jetbrains/plugin
+        env:
+          JETBRAINS_PUBLISH_TOKEN: ${{ secrets.JETBRAINS_PUBLISH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${JETBRAINS_PUBLISH_TOKEN:-}" ]; then
+            echo 'The JETBRAINS_PUBLISH_TOKEN environment secret is not configured.' >&2
+            exit 1
+          fi
+          gradle publishPlugin --no-daemon

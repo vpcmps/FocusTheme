@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="FocusThemes.b9d6cd53-0821-40c2-bf4e-ef01584a6755" Version="2.0.1" Language="en-US" Publisher="Vinícius Campos" />
+    <Identity Id="FocusThemes.b9d6cd53-0821-40c2-bf4e-ef01584a6755" Version="2.1.0" Language="en-US" Publisher="Vinícius Campos" />
     <DisplayName>Focus Themes</DisplayName>
     <Description xml:space="preserve">Six high-separation dark color themes for Visual Studio, built for scanning. Each of the five C# type kinds gets its own color, one accent leads per theme, and a near-black ground gives contrast without glare. Voltage, Ultraviolet, Reactor, Arcade, Signal and Nightdive.</Description>
     <MoreInfo>https://github.com/vpcmps/FocusTheme</MoreInfo>
