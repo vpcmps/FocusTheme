@@ -1,15 +1,15 @@
 # Focus Themes for Visual Studio
 
-[![Release](https://img.shields.io/github/v/release/vpcmps/FocusThemes?display_name=tag&sort=semver)](https://github.com/vpcmps/FocusThemes/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/vpcmps/FocusThemes/total)](https://github.com/vpcmps/FocusThemes/releases)
-[![CI](https://github.com/vpcmps/FocusThemes/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vpcmps/FocusThemes/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/vpcmps/FocusThemes)](https://github.com/vpcmps/FocusThemes/blob/main/LICENSE.txt)
+[![Release](https://img.shields.io/github/v/release/vpcmps/FocusTheme?display_name=tag&sort=semver)](https://github.com/vpcmps/FocusTheme/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/vpcmps/FocusTheme/total)](https://github.com/vpcmps/FocusTheme/releases)
+[![CI](https://github.com/vpcmps/FocusTheme/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vpcmps/FocusTheme/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/vpcmps/FocusTheme)](https://github.com/vpcmps/FocusTheme/blob/main/LICENSE.txt)
 
 Six high-separation dark themes for Visual Studio, designed for fast scanning. Each gives the five C# type kinds — class, interface, record, struct, and enum — a color of its own: Voltage, Ultraviolet, Reactor, Arcade, Signal, and Nightdive.
 
 The extension targets Visual Studio versions 17.9 through 18.x on AMD64 and ARM64.
 
-Per-theme palette tables and the color-role reference live in the [project wiki](https://github.com/vpcmps/FocusThemes/wiki).
+Per-theme palette tables and the color-role reference live in the [project wiki](https://github.com/vpcmps/FocusTheme/wiki).
 
 ## Installation
 
@@ -21,7 +21,7 @@ Open **Extensions > Manage Extensions** in Visual Studio, search for the extensi
 
 ### GitHub Releases
 
-Download the `.vsix` from the latest [GitHub Release](https://github.com/vpcmps/FocusThemes/releases), close Visual Studio, and run the package. Verify the downloaded file against `SHA256SUMS.txt` before installation.
+Download the `.vsix` from the latest [GitHub Release](https://github.com/vpcmps/FocusTheme/releases), close Visual Studio, and run the package. Verify the downloaded file against `SHA256SUMS.txt` before installation.
 
 ## Development
 
