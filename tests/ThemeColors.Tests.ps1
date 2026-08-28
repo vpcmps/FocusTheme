@@ -255,9 +255,10 @@ Describe 'Focus themes separate the five C# type kinds' {
         # than quietly changing how every theme reads.
         $expected = @(
             'class name', 'comment', 'extension method name', 'interface name',
-            'keyword', 'keyword - control', 'operator - overloaded', 'parameter name',
-            'record class name', 'type parameter name', 'xml doc comment - delimiter',
-            'xml doc comment - name', 'xml doc comment - text'
+            'keyword', 'keyword - control', 'method name', 'operator - overloaded',
+            'parameter name', 'record class name', 'type parameter name',
+            'xml doc comment - delimiter', 'xml doc comment - name',
+            'xml doc comment - text'
         ) | Sort-Object
 
         $emphasis = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'FocusThemes\FocusEmphasis.cs')

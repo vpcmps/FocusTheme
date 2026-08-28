@@ -6,7 +6,7 @@ a hue changes in one place and the whole family follows. Nothing outside this
 file should contain a literal colour.
 
 Palettes come from the "Visual Studio ADHD color scheme" design explorations.
-Every direction there supplies twelve named swatches, a regex sub-family and a
+Every direction there supplies thirteen named swatches, a regex sub-family and a
 full editor mockup, so every syntax hue and the three surface depths (editor /
 chrome / panel) are read straight from the design. Nothing here invents a colour:
 the few values not drawn - raised surface, border, selection, line-number grey,
@@ -60,9 +60,10 @@ RECESSIVE = 3.0
 # Two roles are drawn as tints of another rather than as hues of their own, and
 # that is a decision rather than a shortage of hues:
 #
-#   variable   the direction's own plain-text hue, desaturated. Names are the
-#              most frequent thing on screen, so a sixth full-strength hue there
-#              would make every line compete with itself. They read as text.
+#   variable   the direction's own plain-text hue, desaturated. Locals and
+#              parameters are the most frequent thing on screen, so a
+#              full-strength hue there would make every line compete with
+#              itself. They read as text.
 #   operator   the keyword hue, lightened. An operator is syntax, like a keyword,
 #              so it stays in that family - but it recurs several times per line,
 #              so it recedes rather than shouts.
@@ -71,6 +72,15 @@ RECESSIVE = 3.0
 # report at the end of every run measures hue only. That is why it reports rather
 # than fails: for those two pairs, saturation and lightness are the channels
 # doing the work.
+
+# `property` exists because `dados.Cpf` and a local named `dados` reading
+# identically is a question the colour should answer. It covers what is reached
+# through a dot - property, field and event - while locals and parameters stay
+# on `variable`. That split is the whole reason a seventh hue does not
+# reintroduce the problem `variable` avoids: the high-frequency names are still
+# text, and only the members declared on a type take the hue. Each direction's
+# PROPERTY swatch is drawn straight from the design, the same as every other
+# named role here.
 
 PALETTES = [
     {
@@ -88,9 +98,9 @@ PALETTES = [
         "keyword": "FF2E88",
         "class": "3BE8FF", "interface": "6FFFD1",
         "record": "B6FF3D", "struct": "FFD24D", "enum": "FF7A1A",
-        "method": "9B8CFF", "variable": "AEBED6", "operator": "FF9EC4",
-        "string": "4ADE80", "number": "FFF275",
-        "regex_text": "2F8551", "regex_group": "CAD5E4",
+        "method": "9B8CFF", "variable": "AEBED6", "property": "6CEE58", "operator": "FF9EC4",
+        "string": "6AA380", "number": "FFF275",
+        "regex_text": "4F7861", "regex_group": "CAD5E4",
         "border": ("3BE8FF", 0.14),
     },
     {
@@ -106,9 +116,9 @@ PALETTES = [
         "keyword": "C77DFF",
         "class": "FF6EC7", "interface": "FFB3E3",
         "record": "6BE1FF", "struct": "5CFFB1", "enum": "FF9060",
-        "method": "FFD166", "variable": "B7ABD4", "operator": "E0BFFF",
-        "string": "A3FF6B", "number": "FFF3A3",
-        "regex_text": "639746", "regex_group": "D0C8E3",
+        "method": "FFD166", "variable": "B7ABD4", "property": "5884EE", "operator": "E0BFFF",
+        "string": "A1C38D", "number": "FFF3A3",
+        "regex_text": "778E6B", "regex_group": "D0C8E3",
         "border": ("C77DFF", 0.18),
     },
     {
@@ -126,9 +136,9 @@ PALETTES = [
         "keyword": "FF7A1A",
         "class": "2EF2C2", "interface": "9FFFE3",
         "record": "A78BFA", "struct": "FF6EA9", "enum": "63D8FF",
-        "method": "FFE066", "variable": "A9C7C0", "operator": "FFB27A",
-        "string": "C6FF4D", "number": "E8FF9E",
-        "regex_text": "759B33", "regex_group": "C7DBD6",
+        "method": "FFE066", "variable": "A9C7C0", "property": "5DEE58", "operator": "FFB27A",
+        "string": "B1C784", "number": "E8FF9E",
+        "regex_text": "819463", "regex_group": "C7DBD6",
         "border": ("2EF2C2", 0.16),
     },
     {
@@ -145,9 +155,9 @@ PALETTES = [
         "keyword": "FF3D7F",
         "class": "FFE94E", "interface": "FFF9C4",
         "record": "FF9F1C", "struct": "3DFFC9", "enum": "C084FC",
-        "method": "4DA8FF", "variable": "C0B4D1", "operator": "FF9CC0",
-        "string": "9FFF6B", "number": "D9FFB3",
-        "regex_text": "629846", "regex_group": "D6CEE1",
+        "method": "4DA8FF", "variable": "C0B4D1", "property": "58EE7A", "operator": "FF9CC0",
+        "string": "9FC38C", "number": "D9FFB3",
+        "regex_text": "768F6A", "regex_group": "D6CEE1",
         "border": ("FF3D7F", 0.18),
     },
     {
@@ -165,9 +175,9 @@ PALETTES = [
         "keyword": "FF5C39",
         "class": "35C2FF", "interface": "6E9BFF",
         "record": "C084FC", "struct": "2DD4BF", "enum": "F472B6",
-        "method": "FBBF24", "variable": "B4BAC7", "operator": "FF9E85",
-        "string": "4ADE80", "number": "A3E635",
-        "regex_text": "328853", "regex_group": "CED2DB",
+        "method": "FBBF24", "variable": "B4BAC7", "property": "58EE6C", "operator": "FF9E85",
+        "string": "6CA481", "number": "A3E635",
+        "regex_text": "527B63", "regex_group": "CED2DB",
         "border": ("E6E8EF", 0.12),
     },
     {
@@ -187,9 +197,9 @@ PALETTES = [
         "keyword": "FF6B6B",
         "class": "4DE1C1", "interface": "4DF2A0",
         "record": "C6FF4D", "struct": "B39BFF", "enum": "FF9BD2",
-        "method": "59B8FF", "variable": "A3BFC7", "operator": "FFA8A8",
-        "string": "FFC24D", "number": "FFE3A8",
-        "regex_text": "967735", "regex_group": "C3D5DB",
+        "method": "59B8FF", "variable": "A3BFC7", "property": "63EE58", "operator": "FFA8A8",
+        "string": "BDA87C", "number": "FFE3A8",
+        "regex_text": "897D5F", "regex_group": "C3D5DB",
         "border": ("4DE1C1", 0.16),
     },
 ]
@@ -323,6 +333,7 @@ REPORTED = [
     ("enum", "enum", AA),
     ("method", "method", AA),
     ("variable", "variable", AA),
+    ("property", "property", AA),
     ("operator", "operator", AA),
     ("string", "string", AA),
     ("number", "number", AA),
@@ -347,7 +358,7 @@ REPORTED = [
 # full chroma in others -- so it lands close by construction and would drown out
 # the pairs worth looking at. Italic, not hue, is what separates it.
 SEPARATED = ("keyword", "class", "record", "struct", "enum", "method",
-             "variable", "operator", "string", "number")
+             "variable", "property", "operator", "string", "number")
 CLOSEST_REPORTED = 3
 
 

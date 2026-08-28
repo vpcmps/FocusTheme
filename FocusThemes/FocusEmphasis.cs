@@ -14,6 +14,7 @@ namespace FocusThemes
         Bold,
         Italic,
         BoldItalic,
+        None
     }
 
     /// <summary>
@@ -73,11 +74,18 @@ namespace FocusThemes
         /// The emphasis each classification carries.
         /// </summary>
         /// <remarks>
-        /// Italic marks what is borrowed, generic or commentary. Bold marks type names, so a
-        /// class reads apart from a method at a call site: <c>Console.WriteLine(...)</c> puts
-        /// the two side by side with only a dot between them, and weight carries that split
-        /// even where hue cannot. Control flow gets both — it is the one thing that changes
-        /// where the code goes.
+        /// Italic marks what is borrowed or generic. Bold marks what was declared and is
+        /// named at a call site — types and methods alike — so <c>dados.ValidarCpf()</c>
+        /// separates the call from the receiver by weight and not only by hue. Control flow
+        /// gets both — it is the one thing that changes where the code goes.
+        /// <para>
+        /// Up to this version bold was reserved for type names, on the argument that
+        /// <c>Console.WriteLine(...)</c> puts a class and a method side by side with only a
+        /// dot between them and weight should carry that split. Bolding methods gives that
+        /// up: class and method are now told apart by hue alone, which the palettes already
+        /// separate by a wide margin. What weight says instead is declaration — a name some
+        /// type owns, against the locals and punctuation around it.
+        /// </para>
         /// <para>
         /// C# has no classification for predefined types: <c>int</c> and <c>string</c> are
         /// plain <c>keyword</c>, exactly like <c>public</c>. Slanting primitives therefore
@@ -93,14 +101,13 @@ namespace FocusThemes
             new Dictionary<string, Emphasis>(StringComparer.Ordinal)
             {
                 // Borrowed, generic or commentary.
-                ["comment"] = Emphasis.Italic,
-                ["xml doc comment - text"] = Emphasis.Italic,
-                ["xml doc comment - delimiter"] = Emphasis.Italic,
-                ["xml doc comment - name"] = Emphasis.Italic,
+                ["comment"] = Emphasis.None,
+                ["xml doc comment - text"] = Emphasis.None,
+                ["xml doc comment - delimiter"] = Emphasis.None,
+                ["xml doc comment - name"] = Emphasis.None,
                 ["parameter name"] = Emphasis.Italic,
                 ["interface name"] = Emphasis.Italic,
                 ["type parameter name"] = Emphasis.Italic,
-                ["extension method name"] = Emphasis.Italic,
 
                 // Every keyword.
                 ["keyword"] = Emphasis.Italic,
@@ -108,6 +115,11 @@ namespace FocusThemes
                 // Type names.
                 ["class name"] = Emphasis.Bold,
                 ["record class name"] = Emphasis.Bold,
+
+                // Callables. An extension method keeps the slant of something borrowed and
+                // takes the weight of the call it is.
+                ["method name"] = Emphasis.Bold,
+                ["extension method name"] = Emphasis.BoldItalic,
 
                 // Things that change where the code goes.
                 ["keyword - control"] = Emphasis.BoldItalic,

@@ -231,7 +231,10 @@ WORKBENCH = [
 # Entries are (selector, role, fontStyle). A selector may be a plain token type
 # ("class"), a type with a modifier ("variable.readonly"), or a modifier alone
 # ("*.declaration"). Emphasis mirrors FocusEmphasis.cs so the three platforms
-# agree: comments and interfaces italic, control flow bold.
+# agree: interfaces italic, methods and control flow bold, comments upright.
+# Comments carry
+# their own hue and sit well below AA on purpose; slanting them as well made
+# commentary the most visually distinct thing on screen rather than the least.
 SEMANTIC = [
     # Types. Each of the five C# kinds keeps its own hue.
     ("class", "class", None),
@@ -244,16 +247,16 @@ SEMANTIC = [
     ("namespace", "punct", None),
     ("*.defaultLibrary", "class", None),
     # Methods.
-    ("function", "method", None),
-    ("method", "method", None),
+    ("function", "method", "bold"),
+    ("method", "method", "bold"),
     ("macro", "method", None),
     ("decorator", "method", None),
-    ("event", "variable", None),
+    ("event", "property", None),
     # Names.
     ("variable", "variable", None),
     ("parameter", "variable", None),
-    ("property", "variable", None),
-    ("field", "variable", None),
+    ("property", "property", None),
+    ("field", "property", None),
     ("variable.readonly", "constant", None),
     ("variable.constant", "constant", None),
     # Syntax.
@@ -264,7 +267,7 @@ SEMANTIC = [
     ("string", "string", None),
     ("number", "number", None),
     ("regexp", "regex_text", None),
-    ("comment", "comment", "italic"),
+    ("comment", "comment", None),
     ("label", "keyword", None),
     # Markup.
     ("selfKeyword", "keyword", "italic"),
@@ -283,8 +286,8 @@ SEMANTIC = [
 # a Rust trait is an interface, a Go struct is a struct, a Python decorator is a
 # method call, and a Markdown heading is a declaration, so it takes the class hue.
 TOKENS = [
-    ("Comment", ["comment", "punctuation.definition.comment"], "comment", "italic"),
-    ("Documentation comment", ["comment.block.documentation"], "comment", "italic"),
+    ("Comment", ["comment", "punctuation.definition.comment"], "comment", None),
+    ("Documentation comment", ["comment.block.documentation"], "comment", None),
     ("Punctuation", [
         "punctuation",
         "punctuation.separator",
@@ -421,7 +424,7 @@ TOKENS = [
         "meta.function-call",
         "meta.function-call.generic",
         "variable.function",
-    ], "method", None),
+    ], "method", "bold"),
     ("Decorator", [
         "meta.decorator",
         "entity.name.function.decorator",
@@ -445,7 +448,7 @@ TOKENS = [
         "variable.other.object.property",
         "meta.object-literal.key",
         "support.variable.property",
-    ], "variable", None),
+    ], "property", None),
     ("Language variable", [
         "variable.language",
         "variable.language.this",
@@ -596,7 +599,7 @@ TOKENS = [
     ("Python docstring", [
         "string.quoted.docstring.python",
         "comment.block.documentation.python",
-    ], "comment", "italic"),
+    ], "comment", None),
     ("Python type hint", [
         "meta.function.parameters support.type",
         "meta.function.return-type",
@@ -609,7 +612,7 @@ TOKENS = [
     ("C# XML doc", [
         "comment.block.documentation.cs",
         "comment.block.documentation.tag.cs",
-    ], "comment", "italic"),
+    ], "comment", None),
 ]
 
 # ---------------------------------------------------------------------------

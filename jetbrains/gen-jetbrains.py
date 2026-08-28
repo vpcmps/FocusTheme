@@ -111,14 +111,17 @@ PLATFORM = [
     ("DEFAULT_BRACES", "punct", None, None),
     ("DEFAULT_BRACKETS", "punct", None, None),
     ("DEFAULT_PARENTHS", "punct", None, None),
-    # Comments, italic - the same emphasis FocusEmphasis.cs applies in Visual
-    # Studio and the VS Code themes apply through fontStyle.
-    ("DEFAULT_COMMENT", "comment", None, "italic"),
-    ("DEFAULT_LINE_COMMENT", "comment", None, "italic"),
-    ("DEFAULT_BLOCK_COMMENT", "comment", None, "italic"),
-    ("DEFAULT_DOC_COMMENT", "comment", None, "italic"),
-    ("DEFAULT_DOC_COMMENT_TAG", "class", None, "italic"),
-    ("DEFAULT_DOC_COMMENT_TAG_VALUE", "string", None, "italic"),
+    # Comments, upright - the same emphasis FocusEmphasis.cs applies in Visual
+    # Studio and the VS Code themes apply through fontStyle. The comment hue
+    # already puts commentary well below the code around it; adding a slant on
+    # top made it the most visually distinct thing on screen rather than the
+    # least.
+    ("DEFAULT_COMMENT", "comment", None, None),
+    ("DEFAULT_LINE_COMMENT", "comment", None, None),
+    ("DEFAULT_BLOCK_COMMENT", "comment", None, None),
+    ("DEFAULT_DOC_COMMENT", "comment", None, None),
+    ("DEFAULT_DOC_COMMENT_TAG", "class", None, None),
+    ("DEFAULT_DOC_COMMENT_TAG_VALUE", "string", None, None),
     ("DEFAULT_DOC_MARKUP", "muted", None, None),
     # Literals.
     ("DEFAULT_STRING", "string", None, None),
@@ -132,16 +135,23 @@ PLATFORM = [
     ("DEFAULT_CLASS_REFERENCE", "class", None, None),
     ("DEFAULT_INTERFACE_NAME", "interface", None, "italic"),
     ("DEFAULT_METADATA", "method", None, "italic"),
-    # Callables.
-    ("DEFAULT_FUNCTION_DECLARATION", "method", None, None),
-    ("DEFAULT_FUNCTION_CALL", "method", None, None),
-    ("DEFAULT_INSTANCE_METHOD", "method", None, None),
-    ("DEFAULT_STATIC_METHOD", "method", None, None),
-    # Names.
+    # Callables, bold - the same weight FocusEmphasis.cs gives `method name` in
+    # Visual Studio. Decorators, annotations and built-ins stay italic-only:
+    # those are metadata about a callable rather than one you declared.
+    ("DEFAULT_FUNCTION_DECLARATION", "method", None, "bold"),
+    ("DEFAULT_FUNCTION_CALL", "method", None, "bold"),
+    ("DEFAULT_INSTANCE_METHOD", "method", None, "bold"),
+    ("DEFAULT_STATIC_METHOD", "method", None, "bold"),
+    # Names, split two ways. Locals and parameters take `variable`, a
+    # desaturated plain text - they are the bulk of what is on a line and should
+    # read as text. Members reached through a dot take `property`, a hue of its
+    # own, so a field access does not read as a local. Data-format keys
+    # (JSON, YAML, CSS, HTML) stay on `variable`: they are not members of a type,
+    # and recolouring them would repaint every config file in the project.
     ("DEFAULT_LOCAL_VARIABLE", "variable", None, None),
     ("DEFAULT_PARAMETER", "variable", None, None),
-    ("DEFAULT_INSTANCE_FIELD", "variable", None, None),
-    ("DEFAULT_STATIC_FIELD", "variable", None, None),
+    ("DEFAULT_INSTANCE_FIELD", "property", None, None),
+    ("DEFAULT_STATIC_FIELD", "property", None, None),
     ("DEFAULT_GLOBAL_VARIABLE", "variable", None, None),
     ("DEFAULT_REASSIGNED_LOCAL_VARIABLE", "variable", None, None),
     ("DEFAULT_REASSIGNED_PARAMETER", "variable", None, None),
@@ -200,14 +210,14 @@ CSHARP = [
     ("ReSharper.DELEGATE_IDENTIFIER", "class", None, None),
     ("ReSharper.TYPE_PARAMETER_IDENTIFIER", "class", None, "italic"),
     ("ReSharper.NAMESPACE_IDENTIFIER", "punct", None, None),
-    ("ReSharper.METHOD_IDENTIFIER", "method", None, None),
-    ("ReSharper.EXTENSION_METHOD_IDENTIFIER", "method", None, None),
+    ("ReSharper.METHOD_IDENTIFIER", "method", None, "bold"),
+    ("ReSharper.EXTENSION_METHOD_IDENTIFIER", "method", None, "bold italic"),
     ("ReSharper.CONSTRUCTOR_IDENTIFIER", "class", None, None),
     ("ReSharper.LOCAL_VARIABLE_IDENTIFIER", "variable", None, None),
     ("ReSharper.PARAMETER_IDENTIFIER", "variable", None, None),
-    ("ReSharper.FIELD_IDENTIFIER", "variable", None, None),
-    ("ReSharper.STATIC_FIELD_IDENTIFIER", "variable", None, None),
-    ("ReSharper.EVENT_IDENTIFIER", "variable", None, None),
+    ("ReSharper.FIELD_IDENTIFIER", "property", None, None),
+    ("ReSharper.STATIC_FIELD_IDENTIFIER", "property", None, None),
+    ("ReSharper.EVENT_IDENTIFIER", "property", None, None),
     ("ReSharper.CONSTANT_IDENTIFIER", "constant", None, None),
     ("ReSharper.ENUM_MEMBER_IDENTIFIER", "variable", None, None),
     ("ReSharper.LABEL_IDENTIFIER", "keyword", None, None),
@@ -224,12 +234,12 @@ CSHARP = [
     ("ReSharper.REGEXP_ANCHOR", "method", None, None),
     ("ReSharper.REGEXP_CHARACTER_CLASS", "enum", None, None),
     ("ReSharper.REGEXP_ESCAPE_CHARACTER", "struct", None, None),
-    ("ReSharper.REGEXP_COMMENT", "comment", None, "italic"),
+    ("ReSharper.REGEXP_COMMENT", "comment", None, None),
     # XML doc comments inside C#.
-    ("ReSharper.XMLDOC_TAG", "class", None, "italic"),
-    ("ReSharper.XMLDOC_ATTRIBUTE_NAME", "class", None, "italic"),
-    ("ReSharper.XMLDOC_ATTRIBUTE_VALUE", "string", None, "italic"),
-    ("ReSharper.XMLDOC_TEXT", "comment", None, "italic"),
+    ("ReSharper.XMLDOC_TAG", "class", None, None),
+    ("ReSharper.XMLDOC_ATTRIBUTE_NAME", "class", None, None),
+    ("ReSharper.XMLDOC_ATTRIBUTE_VALUE", "string", None, None),
+    ("ReSharper.XMLDOC_TEXT", "comment", None, None),
 ]
 
 # Python. PyCharm is one of the four targets, so this block is as complete as
@@ -242,8 +252,8 @@ PYTHON = [
     ("PY.BYTES", "string", None, None),
     ("PY.FSTRING_FRAGMENT", "text", None, None),
     ("PY.NUMBER", "number", None, None),
-    ("PY.LINE_COMMENT", "comment", None, "italic"),
-    ("PY.DOC_COMMENT", "comment", None, "italic"),
+    ("PY.LINE_COMMENT", "comment", None, None),
+    ("PY.DOC_COMMENT", "comment", None, None),
     ("PY.OPERATION_SIGN", "operator", None, None),
     ("PY.PARENTHS", "punct", None, None),
     ("PY.BRACKETS", "punct", None, None),
@@ -252,8 +262,8 @@ PYTHON = [
     ("PY.DOT", "punct", None, None),
     # A class definition is a declaration; a builtin type is a type reference.
     ("PY.CLASS_DEFINITION", "class", None, None),
-    ("PY.FUNC_DEFINITION", "method", None, None),
-    ("PY.NESTED_FUNC_DEFINITION", "method", None, None),
+    ("PY.FUNC_DEFINITION", "method", None, "bold"),
+    ("PY.NESTED_FUNC_DEFINITION", "method", None, "bold"),
     ("PY.PREDEFINED_DEFINITION", "method", None, "italic"),
     ("PY.PREDEFINED_USAGE", "method", None, "italic"),
     ("PY.BUILTIN_NAME", "class", None, None),
@@ -275,8 +285,8 @@ OTHER_LANGUAGES = [
     ("JS.LOCAL_VARIABLE", "variable", None, None),
     ("JS.PARAMETER", "variable", None, None),
     ("JS.GLOBAL_VARIABLE", "variable", None, None),
-    ("JS.GLOBAL_FUNCTION", "method", None, None),
-    ("JS.INSTANCE_MEMBER_FUNCTION", "method", None, None),
+    ("JS.GLOBAL_FUNCTION", "method", None, "bold"),
+    ("JS.INSTANCE_MEMBER_FUNCTION", "method", None, "bold"),
     ("JS.CLASS", "class", None, None),
     ("JS.REGEXP", "regex_text", None, None),
     ("JS.DECORATOR", "method", None, "italic"),
@@ -290,10 +300,10 @@ OTHER_LANGUAGES = [
     ("GO_BUILTIN_FUNCTION", "method", None, "italic"),
     ("GO_BUILTIN_TYPE_REFERENCE", "class", None, None),
     ("GO_TYPE_REFERENCE", "class", None, None),
-    ("GO_STRUCT_EXPORTED_MEMBER", "variable", None, None),
-    ("GO_STRUCT_LOCAL_MEMBER", "variable", None, None),
-    ("GO_PACKAGE_EXPORTED_FUNCTION", "method", None, None),
-    ("GO_PACKAGE_LOCAL_FUNCTION", "method", None, None),
+    ("GO_STRUCT_EXPORTED_MEMBER", "property", None, None),
+    ("GO_STRUCT_LOCAL_MEMBER", "property", None, None),
+    ("GO_PACKAGE_EXPORTED_FUNCTION", "method", None, "bold"),
+    ("GO_PACKAGE_LOCAL_FUNCTION", "method", None, "bold"),
     # Rust.
     ("org.rust.KEYWORD", "keyword", None, None),
     ("org.rust.STRUCT", "struct", None, None),
@@ -301,8 +311,8 @@ OTHER_LANGUAGES = [
     ("org.rust.TRAIT", "interface", None, "italic"),
     ("org.rust.TYPE_ALIAS", "class", None, None),
     ("org.rust.TYPE_PARAMETER", "class", None, "italic"),
-    ("org.rust.FUNCTION", "method", None, None),
-    ("org.rust.METHOD", "method", None, None),
+    ("org.rust.FUNCTION", "method", None, "bold"),
+    ("org.rust.METHOD", "method", None, "bold"),
     ("org.rust.MACRO", "method", None, None),
     ("org.rust.LIFETIME", "constant", None, "italic"),
     ("org.rust.ATTRIBUTE", "method", None, "italic"),
@@ -313,9 +323,9 @@ OTHER_LANGUAGES = [
     ("KOTLIN_TRAIT", "interface", None, "italic"),
     ("KOTLIN_ENUM", "enum", None, None),
     ("KOTLIN_TYPE_PARAMETER", "class", None, "italic"),
-    ("KOTLIN_FUNCTION_DECLARATION", "method", None, None),
-    ("KOTLIN_FUNCTION_CALL", "method", None, None),
-    ("KOTLIN_EXTENSION_FUNCTION_CALL", "method", None, None),
+    ("KOTLIN_FUNCTION_DECLARATION", "method", None, "bold"),
+    ("KOTLIN_FUNCTION_CALL", "method", None, "bold"),
+    ("KOTLIN_EXTENSION_FUNCTION_CALL", "method", None, "bold italic"),
     ("KOTLIN_ANNOTATION", "method", None, "italic"),
     ("KOTLIN_LABEL", "keyword", None, None),
     ("KOTLIN_SMART_CAST_VALUE", None, "wordhighlight", None),
@@ -333,7 +343,7 @@ OTHER_LANGUAGES = [
     ("SQL_TYPE", "class", None, None),
     ("SQL_TABLE", "class", None, None),
     ("SQL_COLUMN", "variable", None, None),
-    ("SQL_PROCEDURE", "method", None, None),
+    ("SQL_PROCEDURE", "method", None, "bold"),
     ("SQL_SCHEMA", "punct", None, None),
     # Markdown.
     ("MARKDOWN_HEADER_LEVEL_1", "class", None, "bold"),
@@ -372,11 +382,11 @@ OTHER_LANGUAGES = [
     ("CSS.IDENT", "class", None, None),
     ("CSS.PROPERTY_NAME", "variable", None, None),
     ("CSS.PROPERTY_VALUE", "text", None, None),
-    ("CSS.FUNCTION", "method", None, None),
+    ("CSS.FUNCTION", "method", None, "bold"),
     ("CSS.URL", "string", None, None),
     ("CSS.IMPORTANT", "keyword", None, "bold"),
     # Shell.
-    ("BASH.SHEBANG", "comment", None, "italic"),
+    ("BASH.SHEBANG", "comment", None, None),
     ("BASH.VAR_USE", "variable", None, None),
     ("BASH.VAR_DEF", "variable", None, None),
     ("BASH.EXTERNAL_COMMAND", "method", None, None),
