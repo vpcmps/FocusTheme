@@ -96,6 +96,35 @@ namespace FocusThemes
         /// it as abstract, and stacking bold on top would make interfaces the loudest thing on
         /// screen rather than types in general.
         /// </para>
+        /// <para>
+        /// <b>Markup keys.</b> A config file is a wall of key/value pairs with no type system
+        /// to give it shape, so the one distinction worth drawing is key from value. These get
+        /// bold italic rather than bold alone because a key is both declared - like a type
+        /// name, which is what bold says here - and structural rather than content, which is
+        /// what the slant says. The value keeps the plain weight it already had.
+        /// </para>
+        /// <para>
+        /// The four names are spelled in Title Case because these are editor colour names
+        /// rather than Roslyn classifications, which are lowercase. All four were confirmed
+        /// by eye in Visual Studio Community 2026 18.9 - an element in .html and .xaml, a key
+        /// in .json, an element in .csproj - because nothing here could establish it up front:
+        /// <see cref="Apply"/> skips a name the registry does not know without saying so, so a
+        /// wrong name looks exactly like a working one.
+        /// </para>
+        /// <para>
+        /// Worth recording, because it reads as a contradiction otherwise: <c>XML Name</c> and
+        /// <c>XAML Name</c> take their colour from the legacy "Text Editor Language Service
+        /// Items" category - the same other route that paints <c>keyword</c> and
+        /// <c>comment</c>, described above - and are still in the classification registry all
+        /// the same. Which Fonts and Colors category paints a name says nothing about whether
+        /// MEF can reach it. The two are separate lookups, and only the second one matters
+        /// here.
+        /// </para>
+        /// <para>
+        /// YAML has no entry at all. Visual Studio 2026 defines no classification for a YAML
+        /// key - not in the classification registry and not among the editor's colourable
+        /// items - so there is nothing here to emphasise.
+        /// </para>
         /// </remarks>
         private static readonly IReadOnlyDictionary<string, Emphasis> Emphases =
             new Dictionary<string, Emphasis>(StringComparer.Ordinal)
@@ -124,6 +153,14 @@ namespace FocusThemes
                 // Things that change where the code goes.
                 ["keyword - control"] = Emphasis.BoldItalic,
                 ["operator - overloaded"] = Emphasis.Bold,
+
+                // The key half of a key/value document. See the remarks above on why
+                // these carry both weight and slant, and which of them the registry can
+                // actually reach.
+                ["HTML Element Name"] = Emphasis.BoldItalic,
+                ["JSON Property Name"] = Emphasis.BoldItalic,
+                ["XML Name"] = Emphasis.BoldItalic,
+                ["XAML Name"] = Emphasis.BoldItalic,
             };
 
         [Import]

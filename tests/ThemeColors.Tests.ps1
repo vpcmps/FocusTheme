@@ -258,7 +258,11 @@ Describe 'Focus themes separate the five C# type kinds' {
             'keyword', 'keyword - control', 'method name', 'operator - overloaded',
             'parameter name', 'record class name', 'type parameter name',
             'xml doc comment - delimiter', 'xml doc comment - name',
-            'xml doc comment - text'
+            'xml doc comment - text',
+            # Markup keys. Title Case because these are editor colour names rather than
+            # Roslyn classifications; XML Name and XAML Name are legacy colourable items
+            # the classification registry may not reach. See FocusEmphasis.cs remarks.
+            'HTML Element Name', 'JSON Property Name', 'XML Name', 'XAML Name'
         ) | Sort-Object
 
         $emphasis = Get-Content -Raw -LiteralPath (Join-Path $repoRoot 'FocusThemes\FocusEmphasis.cs')
